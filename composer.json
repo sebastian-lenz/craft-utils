@@ -1,0 +1,14 @@
+{
+  "name": "sebastianlenz/craft-utils",
+  "description": "A collection of utility classes for Craft CMS development",
+  "license": "MIT",
+  "require": {
+    "php": ">=7.0.0",
+    "craftcms/cms": "^3.1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "lenz\\craft\\utils\\": "src/"
+    }
+  }
+}

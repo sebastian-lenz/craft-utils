@@ -1,0 +1,78 @@
+{% macro checkboxField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.checkboxField({
+    checked: model[name],
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+  }|merge(options)) }}
+{% endmacro %}
+
+{% macro dateField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.dateField({
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+    value: model[name],
+  }|merge(options)) }}
+{% endmacro %}
+
+{% macro datetimeField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.datetimeField({
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+    value: model[name],
+  }|merge(options)) }}
+{% endmacro %}
+
+{% macro selectField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.selectField({
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    options: model.getAttributeOptions(name),
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+    value: model[name],
+  }|merge(options)) }}
+{% endmacro %}
+
+{% macro textareaField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.textareaField({
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+    value: model[name],
+  }|merge(options)) }}
+{% endmacro %}
+
+{% macro textField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.textField({
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+    value: model[name],
+  }|merge(options)) }}
+{% endmacro %}
