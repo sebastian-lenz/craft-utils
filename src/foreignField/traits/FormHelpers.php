@@ -35,9 +35,8 @@ trait FormHelpers
       ? $attributeOptions[$attribute]
       : [];
 
-    $domain = $this->_field::TRANSLATION_DOMAIN;
     foreach ($options as $key => $value) {
-      $options[$key] = Craft::t($domain, $value);
+      $options[$key] = $this->translate($value);
     }
 
     return $options;
@@ -73,5 +72,14 @@ trait FormHelpers
     }
 
     return false;
+  }
+
+  /**
+   * @param string $value
+   * @return string
+   */
+  protected function translate($value) {
+    $domain = $this->_field::TRANSLATION_DOMAIN;
+    return Craft::t($domain, $value);
   }
 }
