@@ -35,10 +35,10 @@ abstract class ForeignModel extends Model
    * @param array $config
    */
   public function __construct(ForeignField $field, ElementInterface $owner = null, array $config = []) {
-    parent::__construct($config);
-
     $this->_field = $field;
     $this->_owner = $owner;
+
+    parent::__construct($config);
   }
 
   /**
