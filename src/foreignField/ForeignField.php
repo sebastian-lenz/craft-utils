@@ -181,6 +181,13 @@ abstract class ForeignField extends Field
     return $this->createModel($attributes, $element);
   }
 
+  /**
+   * @inheritdoc
+   */
+  public function serializeValue($value, ElementInterface $element = null) {
+    return $value->getAttributes();
+  }
+
 
   // Protected methods
   // -----------------
@@ -231,8 +238,8 @@ abstract class ForeignField extends Field
    * @param ElementInterface $element
    * @return array
    */
-  public function getRecordAttributes(ForeignModel $model, ElementInterface $element) {
-    $attributes = $model->getAttributes();
+  protected function getRecordAttributes(ForeignModel $model, ElementInterface $element) {
+    $attributes = $this->serializeValue($model, $element);
 
     if (
       $element instanceof Element &&
