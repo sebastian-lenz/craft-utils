@@ -3,6 +3,8 @@
 namespace lenz\craft\utils\foreignField\traits;
 
 use Craft;
+use craft\redactor\Field;
+use lenz\craft\utils\foreignField\ForeignField;
 use yii\base\Model;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
@@ -30,13 +32,14 @@ trait FormHelpers
    * @return array
    */
   public function getAttributeOptions($attribute) {
+    $field = $this->getField();
     $attributeOptions = $this->attributeOptions();
     $options = array_key_exists($attribute, $attributeOptions)
       ? $attributeOptions[$attribute]
       : [];
 
     foreach ($options as $key => $value) {
-      $options[$key] = $this->translate($value);
+      $options[$key] = $field::t($value);
     }
 
     return $options;
@@ -47,6 +50,7 @@ trait FormHelpers
    * @return string
    */
   public function getAttributeOptionLabel($attribute) {
+    $field = $this->getField();
     $value = $this->$attribute;
     $attributeOptions = $this->attributeOptions();
     $options = array_key_exists($attribute, $attributeOptions)
@@ -54,9 +58,14 @@ trait FormHelpers
       : [];
 
     return array_key_exists($value, $options)
-      ? Craft::t($this->_field::TRANSLATION_DOMAIN, $options[$value])
+      ? $field::t($options[$value])
       : $value;
   }
+
+  /**
+   * @return ForeignField
+   */
+  abstract function getField();
 
   /**
    * @param string $attribute
@@ -75,11 +84,21 @@ trait FormHelpers
   }
 
   /**
-   * @param string $value
+   * @param string $name
+   * @param array $options
    * @return string
    */
-  protected function translate($value) {
-    $domain = $this->_field::TRANSLATION_DOMAIN;
-    return Craft::t($domain, $value);
+  public function renderRedactorField($name, $options) {
+    $redactorClass = 'craft\redactor\Field';
+    if (!class_exists($redactorClass)) {
+      return '<p>Editor not available</p>';
+    }
+
+    $redactor = new $redactorClass([
+      'handle'         => $name,
+      'redactorConfig' => 'Custom.json',
+    ]);
+
+    return $redactor->getInputHtml($this->$name);
   }
 }

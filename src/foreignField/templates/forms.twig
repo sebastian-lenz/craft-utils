@@ -37,6 +37,17 @@
   }|merge(options)) }}
 {% endmacro %}
 
+{% macro redactorField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.field({
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+  }, model.renderRedactorField(name, options)) }}
+{% endmacro %}
+
 {% macro selectField(model, name, options = {}) %}
   {% import "_includes/forms" as forms %}
 

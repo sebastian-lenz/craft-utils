@@ -6,63 +6,33 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\Model;
+use craft\db\ActiveRecord;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
 use Exception;
 use Throwable;
 
 /**
- * Class AbstractRecordField
+ * Class ForeignField
  */
 abstract class ForeignField extends Field
 {
-  /**
-   * The model class used to represent this field.
-   */
-  const MODEL_CLASS = Model::class;
-
-  /**
-   * The query extension class used by this field.
-   */
-  const QUERY_EXTENSION_CLASS = ForeignFieldQueryExtension::class;
-
-  /**
-   * The record class used to store this field.
-   */
-  const RECORD_CLASS = ForeignFieldRecord::class;
-
-  /**
-   * The template used to render the field input.
-   */
-  const TEMPLATE_INPUT = '';
-
-  /**
-   * The template used to render the field settings.
-   */
-  const TEMPLATE_SETTINGS = '';
-
-  /**
-   * The translation domain used by this field.
-   */
-  const TRANSLATION_DOMAIN = 'site';
-
-
   /**
    * @inheritDoc
    * @throws Exception
    */
   public function afterElementSave(ElementInterface $element, bool $isNew) {
     $model = $element->getFieldValue($this->handle);
-    if (!($model instanceof ForeignModel)) {
+    if (!is_a($model, static::modelClass())) {
       throw new Exception('Invalid value');
     }
 
-    if ($this->shouldUpdateRecord($element, $model)) {
-      $attributes = $this->getRecordAttributes($model, $element);
-      $this->findOrCreateRecord($element)
-        ->setModelAttributes($attributes)
-        ->save();
+    if ($this->shouldUpdateRecord($model, $element)) {
+      $attributes = $this->toRecordAttributes($model, $element);
+      $record     = $this->findOrCreateRecord($element);
+
+      $this->applyRecordAttributes($record, $attributes, $element);
+      $record->save();
     }
 
     parent::afterElementSave($element, $isNew);
@@ -73,10 +43,7 @@ abstract class ForeignField extends Field
    */
   public function getElementValidationRules(): array {
     return [
-      [ForeignModelValidator::class,
-        'modelClass'        => static::MODEL_CLASS,
-        'translationDomain' => static::TRANSLATION_DOMAIN,
-      ]
+      [ForeignFieldModelValidator::class, 'field' => $this]
     ];
   }
 
@@ -91,11 +58,12 @@ abstract class ForeignField extends Field
    * @inheritDoc
    */
   public function getSettingsHtml() {
-    if (empty(static::TEMPLATE_SETTINGS)) {
+    $template = self::settingsTemplate();
+    if (empty($template)) {
       return null;
     }
 
-    return $this->render(static::TEMPLATE_SETTINGS, [
+    return $this->render($template, [
       'field' => $this,
     ]);
   }
@@ -121,40 +89,34 @@ abstract class ForeignField extends Field
    */
   public function isValueEmpty($value, ElementInterface $element): bool {
     return (
-      !is_a($value, static::MODEL_CLASS) ||
-      ($value instanceof ForeignModel && $value->isEmpty())
+      !is_a($value, static::modelClass()) ||
+      ($value instanceof ForeignFieldModel && $value->isEmpty())
     );
   }
 
   /**
-   * @param ElementQueryInterface $query
-   * @param mixed $value
-   * @return bool|false|null
+   * @inheritDoc
    * @throws Exception
    */
   public function modifyElementsQuery(ElementQueryInterface $query, $value) {
-    /** @var ForeignFieldQueryExtension $queryExtension */
-    $queryExtension = static::QUERY_EXTENSION_CLASS;
-    $queryExtension::attachTo($query, $this, $value);
-
+    static::queryExtensionClass()::attachTo($query, $this, $value);
     return null;
   }
 
   /**
-   * @param ElementQueryInterface $query
+   * @inheritDoc
    * @throws Exception
    */
   public function modifyElementIndexQuery(ElementQueryInterface $query) {
-    /** @var ForeignFieldQueryExtension $queryExtension */
-    $queryExtension = static::QUERY_EXTENSION_CLASS;
-    $queryExtension::attachTo($query, $this, null, true);
+    static::queryExtensionClass()::attachTo($query, $this, null, true);
   }
 
   /**
    * @inheritDoc
+   * @throws Exception
    */
   public function normalizeValue($value, ElementInterface $element = null) {
-    $modelClass = static::MODEL_CLASS;
+    $modelClass = static::modelClass();
     if (is_a($value, $modelClass)) {
       return $value;
     }
@@ -166,6 +128,7 @@ abstract class ForeignField extends Field
         $attributes = Json::decode($value);
       } catch (Throwable $error) {
         Craft::error($error->getMessage());
+        $attributes = null;
       }
 
       if (!is_array($attributes)) {
@@ -175,7 +138,7 @@ abstract class ForeignField extends Field
       $record = $this->findRecord($element);
       $attributes = is_null($record)
         ? []
-        : $record->getModelAttributes();
+        : $this->toModelAttributes($record, $element);
     }
 
     return $this->createModel($attributes, $element);
@@ -185,7 +148,7 @@ abstract class ForeignField extends Field
    * @inheritdoc
    */
   public function serializeValue($value, ElementInterface $element = null) {
-    return $value->getAttributes();
+    return $this->toRecordAttributes($value, $element);
   }
 
 
@@ -193,25 +156,44 @@ abstract class ForeignField extends Field
   // -----------------
 
   /**
+   * @param ActiveRecord $record
+   * @param array $attributes
+   * @param ElementInterface $element
+   */
+  protected function applyRecordAttributes(ActiveRecord $record, array $attributes, ElementInterface $element) {
+    $isPropagating = $element instanceof Element && $element->propagating;
+
+    foreach ($attributes as $name => $value) {
+      // Skip all attributes that are not propagated
+      if ($isPropagating && !$this->isAttributePropagated($name)) {
+        continue;
+      }
+
+      $record->setAttribute($name, $value);
+    }
+  }
+
+  /**
    * @param array $attributes
    * @param ElementInterface|null $element
-   * @return ForeignModel
+   * @return ForeignFieldModel
    */
   protected function createModel(array $attributes = [], ElementInterface $element = null) {
-    $modelClass = static::MODEL_CLASS;
+    $modelClass = static::modelClass();
     return new $modelClass($this, $element, $attributes);
   }
 
   /**
    * @param ElementInterface $element
-   * @return ForeignFieldRecord
+   * @return ActiveRecord
+   * @throws Exception
    */
   protected function findOrCreateRecord(ElementInterface $element) {
     $record = $this->findRecord($element);
 
     if (is_null($record)) {
-      /** @var ForeignFieldRecord $recordClass */
-      $recordClass = static::RECORD_CLASS;
+      /** @var ActiveRecord $recordClass */
+      $recordClass = static::modelClass();
       $conditions = $this->getRecordConditions($element);
       $record = new $recordClass($conditions);
     }
@@ -221,11 +203,12 @@ abstract class ForeignField extends Field
 
   /**
    * @param ElementInterface|null $element
-   * @return ForeignFieldRecord|null
+   * @return ActiveRecord|null
+   * @throws Exception
    */
   protected function findRecord(ElementInterface $element = null) {
-    /** @var ForeignFieldRecord $recordClass */
-    $recordClass = static::RECORD_CLASS;
+    /** @var ActiveRecord $recordClass */
+    $recordClass = static::recordClass();
     $conditions = $this->getRecordConditions($element);
 
     return is_null($conditions)
@@ -234,33 +217,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ForeignModel $model
-   * @param ElementInterface $element
-   * @return array
-   */
-  protected function getRecordAttributes(ForeignModel $model, ElementInterface $element) {
-    $attributes = $this->serializeValue($model, $element);
-
-    if (
-      $element instanceof Element &&
-      $element->propagating
-    ) {
-      $propagatingAttributes = [];
-      foreach ($attributes as $attribute => $value) {
-        if ($this->isAttributePropagated($attribute)) {
-          $propagatingAttributes[$attribute] = $value;
-        }
-      }
-
-      $attributes = $propagatingAttributes;
-    }
-
-    return $attributes;
-  }
-
-  /**
    * @param ElementInterface|null $element
    * @return array|null
+   * @throws Exception
    */
   protected function getRecordConditions(ElementInterface $element = null) {
     if (is_null($element)) {
@@ -272,7 +231,11 @@ abstract class ForeignField extends Field
       'fieldId'   => $this->id,
     ];
 
-    if (static::hasPerSiteRecords() && $element instanceof Element) {
+    if (static::hasPerSiteRecords()) {
+      if (!$element instanceof Element) {
+        throw new Exception('Cannot reference elements not extending class Element.');
+      }
+
       $conditions['siteId'] = $element->siteId;
     }
 
@@ -280,13 +243,13 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ForeignModel $value
+   * @param ForeignFieldModel $value
    * @param ElementInterface|null $element
    * @param bool $disabled
    * @return string
    */
-  protected function getHtml(ForeignModel $value, ElementInterface $element = null, $disabled = false) {
-    return $this->render(static::TEMPLATE_INPUT, [
+  protected function getHtml(ForeignFieldModel $value, ElementInterface $element = null, $disabled = false) {
+    return $this->render(static::inputTemplate(), [
       'disabled' => $disabled,
       'element'  => $element,
       'field'    => $this,
@@ -317,23 +280,38 @@ abstract class ForeignField extends Field
   }
 
   /**
+   * @param ForeignFieldModel $model
    * @param ElementInterface $element
-   * @param ForeignModel $model
    * @return bool
    */
-  protected function shouldUpdateRecord(ElementInterface $element, ForeignModel $model) {
-    /** @var ForeignFieldRecord $recordClass */
-    $recordClass = static::RECORD_CLASS;
-
+  protected function shouldUpdateRecord(ForeignFieldModel $model, ElementInterface $element) {
     if (
+      !static::hasPerSiteRecords() &&
       $element instanceof Element &&
-      $element->propagating &&
-      !$recordClass::IS_PER_SITE
+      $element->propagating
     ) {
       return false;
     }
 
     return true;
+  }
+
+  /**
+   * @param ActiveRecord $record
+   * @param ElementInterface|null $element
+   * @return array
+   */
+  protected function toModelAttributes(ActiveRecord $record, ElementInterface $element = null) {
+    return $record->getAttributes(static::recordModelAttributes());
+  }
+
+  /**
+   * @param ForeignFieldModel $model
+   * @param ElementInterface $element
+   * @return array
+   */
+  protected function toRecordAttributes(ForeignFieldModel $model, ElementInterface $element) {
+    return $model->getAttributes(static::recordModelAttributes());
   }
 
 
@@ -351,9 +329,45 @@ abstract class ForeignField extends Field
    * @return bool
    */
   public static function hasPerSiteRecords(): bool {
-    /** @var ForeignFieldRecord $recordClass */
-    $recordClass = static::RECORD_CLASS;
-    return $recordClass::IS_PER_SITE;
+    return true;
+  }
+
+  /**
+   * @return string
+   */
+  abstract public static function inputTemplate(): string;
+
+  /**
+   * The model class used to represent this field.
+   * @return string
+   */
+  abstract public static function modelClass(): string;
+
+  /**
+   * The query extension class used by this field.
+   * @return string
+   */
+  public static function queryExtensionClass(): string {
+    return ForeignFieldQueryExtension::class;
+  }
+
+  /**
+   * The record class used to store this field.
+   * @return string
+   */
+  abstract public static function recordClass(): string;
+
+  /**
+   * The list of record attributes that must be copied over to the model.
+   * @return array
+   */
+  abstract public static function recordModelAttributes(): array;
+
+  /**
+   * @return string|null
+   */
+  public static function settingsTemplate() {
+    return null;
   }
 
   /**
@@ -373,6 +387,14 @@ abstract class ForeignField extends Field
       self::TRANSLATION_METHOD_LANGUAGE,
       self::TRANSLATION_METHOD_CUSTOM,
     ];
+  }
+
+  /**
+   * @param string $message
+   * @return string
+   */
+  public static function t(string $message): string {
+    return Craft::t('site', $message);
   }
 }
 

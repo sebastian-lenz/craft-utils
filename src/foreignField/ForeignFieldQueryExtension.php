@@ -3,6 +3,7 @@
 namespace lenz\craft\utils\foreignField;
 
 use Craft;
+use craft\db\ActiveRecord;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
@@ -89,11 +90,11 @@ class ForeignFieldQueryExtension
    * @return void
    */
   protected function attachJoin() {
-    /** @var ForeignFieldRecord $recordClass */
-    $recordClass = $this->field::RECORD_CLASS;
+    /** @var ActiveRecord $recordClass */
+    $recordClass = $this->field::recordClass();
+    $tableName   = $recordClass::tableName();
     $handle      = $this->field->handle;
     $fieldId     = $this->field->id;
-    $tableName   = $recordClass::TABLE_NAME;
     $query       = $this->query->query;
     $subQuery    = $this->query->subQuery;
 
@@ -102,7 +103,7 @@ class ForeignFieldQueryExtension
       "[[$handle.fieldId]] = $fieldId"
     ];
 
-    if ($recordClass::IS_PER_SITE) {
+    if ($this->field::hasPerSiteRecords()) {
       $conditions[] = "[[$handle.siteId]] = [[elements_sites.id]]";
     }
 
@@ -122,10 +123,7 @@ class ForeignFieldQueryExtension
    * @return string
    */
   protected function getJsonExpression() {
-    /** @var ForeignFieldRecord $record */
-    $recordClass = $this->field::RECORD_CLASS;
-    $record      = new $recordClass();
-    $attributes  = $record->modelAttributes();
+    $attributes  = $this->field::recordModelAttributes();
     $handle      = $this->field->handle;
     $fields      = [];
 

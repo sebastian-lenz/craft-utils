@@ -2,18 +2,17 @@
 
 namespace lenz\craft\utils\foreignField;
 
-use Craft;
 use yii\validators\Validator;
 
 /**
  * Class ForeignModelValidator
  */
-class ForeignModelValidator extends Validator
+class ForeignFieldModelValidator extends Validator
 {
   /**
-   * @var string
+   * @var ForeignField
    */
-  public $modelClass = ForeignModel::class;
+  public $field;
 
   /**
    * @var string
@@ -25,26 +24,24 @@ class ForeignModelValidator extends Validator
    */
   public $msgErrors = '{attribute} contains errors.';
 
-  /**
-   * @var string
-   */
-  public $translationDomain = 'site';
-
 
   /**
    * @param mixed $value
    * @return array|null
    */
   protected function validateValue($value) {
-    if (!is_a($value, $this->modelClass)) {
+    $field      = $this->field;
+    $modelClass = $field::modelClass();
+
+    if (!is_a($value, $modelClass)) {
       return [
-        Craft::t($this->translationDomain, $this->msgInstanceOf),
-        ['modelClass' => $this->modelClass]
+        $field::t($this->msgInstanceOf),
+        ['modelClass' => $modelClass]
       ];
     }
 
     if (!$value->validate()) {
-      return [Craft::t($this->translationDomain, $this->msgErrors), []];
+      return [$field::t($this->msgErrors), []];
     }
 
     return null;

@@ -31,7 +31,7 @@ class ElementCache extends ServiceLocator
   /**
    * ElementCache constructor.
    */
-  private function __construct() {
+  public function __construct() {
     parent::__construct();
 
     $this->components = [
@@ -54,7 +54,7 @@ class ElementCache extends ServiceLocator
   }
 
   /**
-   * @param ElementEvent $event
+   * @param Event $event
    */
   public function onElementChanged(Event $event) {
     $this->cache->flush();

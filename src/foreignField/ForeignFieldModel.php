@@ -10,7 +10,7 @@ use craft\elements\MatrixBlock;
 /**
  * Class ForeignModel
  */
-abstract class ForeignModel extends Model
+abstract class ForeignFieldModel extends Model
 {
   /**
    * @var ForeignField
@@ -23,7 +23,7 @@ abstract class ForeignModel extends Model
   protected $_owner;
 
   /**
-   * @var ElementInterface
+   * @var ElementInterface|null
    */
   protected $_root;
 
@@ -46,10 +46,7 @@ abstract class ForeignModel extends Model
    * @return string
    */
   public function getAttributeLabel($attribute) {
-    return Craft::t(
-      $this->_field::TRANSLATION_DOMAIN,
-      parent::getAttributeLabel($attribute)
-    );
+    return $this->_field::t(parent::getAttributeLabel($attribute));
   }
 
   /**
@@ -67,11 +64,13 @@ abstract class ForeignModel extends Model
   }
 
   /**
-   * @return ElementInterface
+   * @return ElementInterface|null
    */
   public function getRoot() {
     if (!isset($this->_rootElement)) {
-      $this->_rootElement = $this->getParentElement($this->_owner);
+      $this->_rootElement = is_null($this->_owner)
+        ? null
+        : $this->getParentElement($this->_owner);
     }
 
     return $this->_rootElement;

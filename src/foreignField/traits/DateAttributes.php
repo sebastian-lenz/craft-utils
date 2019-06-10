@@ -25,7 +25,6 @@ trait DateAttributes
    */
   abstract function dateAttributes();
 
-
   /**
    * @inheritDoc
    * @throws \Exception
