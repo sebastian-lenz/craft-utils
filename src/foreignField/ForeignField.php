@@ -205,7 +205,7 @@ abstract class ForeignField extends Field
 
     if (is_null($record)) {
       /** @var ActiveRecord $recordClass */
-      $recordClass = static::modelClass();
+      $recordClass = static::recordClass();
       $conditions = $this->getRecordConditions($element);
       $record = new $recordClass($conditions);
     }
