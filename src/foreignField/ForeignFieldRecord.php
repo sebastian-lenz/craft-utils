@@ -5,6 +5,10 @@ namespace lenz\craft\utils\foreignField;
 use craft\db\ActiveRecord;
 use craft\db\Migration;
 use craft\db\Table;
+use craft\records\Element;
+use craft\records\Field;
+use craft\records\Site;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class ForeignFieldRecord
@@ -15,6 +19,27 @@ use craft\db\Table;
  */
 abstract class ForeignFieldRecord extends ActiveRecord
 {
+  /**
+   * @return ActiveQueryInterface
+   */
+  public function getElement(): ActiveQueryInterface {
+    return $this->hasOne(Element::class, ['id' => 'elementId']);
+  }
+
+  /**
+   * @return ActiveQueryInterface
+   */
+  public function getField(): ActiveQueryInterface {
+    return $this->hasOne(Field::class, ['id' => 'fieldId']);
+  }
+
+  /**
+   * @return ActiveQueryInterface
+   */
+  public function getSite(): ActiveQueryInterface {
+    return $this->hasOne(Site::class, ['id' => 'siteId']);
+  }
+
   /**
    * @inheritDoc
    */

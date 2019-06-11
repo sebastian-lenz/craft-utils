@@ -11,6 +11,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
 use Exception;
 use Throwable;
+use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * Class ForeignField
@@ -41,6 +42,17 @@ abstract class ForeignField extends Field
   /**
    * @inheritDoc
    */
+  public function behaviors() {
+    return [
+      'typecast' => [
+        'class' => AttributeTypecastBehavior::class,
+      ],
+    ];
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function getElementValidationRules(): array {
     return [
       [ForeignFieldModelValidator::class, 'field' => $this]
@@ -58,7 +70,7 @@ abstract class ForeignField extends Field
    * @inheritDoc
    */
   public function getSettingsHtml() {
-    $template = self::settingsTemplate();
+    $template = static::settingsTemplate();
     if (empty($template)) {
       return null;
     }
