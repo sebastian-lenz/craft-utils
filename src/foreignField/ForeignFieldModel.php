@@ -67,13 +67,13 @@ abstract class ForeignFieldModel extends Model
    * @return ElementInterface|null
    */
   public function getRoot() {
-    if (!isset($this->_rootElement)) {
-      $this->_rootElement = is_null($this->_owner)
+    if (!isset($this->_root)) {
+      $this->_root = is_null($this->_owner)
         ? null
         : $this->getParentElement($this->_owner);
     }
 
-    return $this->_rootElement;
+    return $this->_root;
   }
 
   /**
