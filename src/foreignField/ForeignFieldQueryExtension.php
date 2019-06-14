@@ -223,7 +223,7 @@ class ForeignFieldQueryExtension
   static public function isCountQuery(ElementQuery $query) {
     return (
       count($query->select) == 1 &&
-      $query->select[0] == 'COUNT(*)'
+      reset($query->select) == 'COUNT(*)'
     );
   }
 }
