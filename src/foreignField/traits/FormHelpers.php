@@ -2,9 +2,6 @@
 
 namespace lenz\craft\utils\foreignField\traits;
 
-use Craft;
-use craft\redactor\Field;
-use lenz\craft\utils\foreignField\ForeignField;
 use yii\base\Model;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
@@ -32,14 +29,13 @@ trait FormHelpers
    * @return array
    */
   public function getAttributeOptions($attribute) {
-    $field = $this->getField();
     $attributeOptions = $this->attributeOptions();
     $options = array_key_exists($attribute, $attributeOptions)
       ? $attributeOptions[$attribute]
       : [];
 
     foreach ($options as $key => $value) {
-      $options[$key] = $field::t($value);
+      $options[$key] = $this->translate($value);
     }
 
     return $options;
@@ -50,7 +46,6 @@ trait FormHelpers
    * @return string
    */
   public function getAttributeOptionLabel($attribute) {
-    $field = $this->getField();
     $value = $this->$attribute;
     $attributeOptions = $this->attributeOptions();
     $options = array_key_exists($attribute, $attributeOptions)
@@ -58,14 +53,9 @@ trait FormHelpers
       : [];
 
     return array_key_exists($value, $options)
-      ? $field::t($options[$value])
+      ? $this->translate($options[$value])
       : $value;
   }
-
-  /**
-   * @return ForeignField
-   */
-  abstract function getField();
 
   /**
    * @param string $attribute
@@ -88,7 +78,7 @@ trait FormHelpers
    * @param array $options
    * @return string
    */
-  public function renderRedactorField($name, $options) {
+  public function renderRedactorField(string $name, array $options) {
     $redactorClass = 'craft\redactor\Field';
     if (!class_exists($redactorClass)) {
       return '<p>Editor not available</p>';
@@ -97,8 +87,18 @@ trait FormHelpers
     $redactor = new $redactorClass([
       'handle'         => $name,
       'redactorConfig' => 'Custom.json',
-    ]);
+    ] + $options);
 
     return $redactor->getInputHtml($this->$name);
   }
+
+
+  // Protected methods
+  // -----------------
+
+  /**
+   * @param string $message
+   * @return string
+   */
+  abstract protected function translate(string $message);
 }

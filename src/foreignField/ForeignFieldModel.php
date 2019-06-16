@@ -2,7 +2,6 @@
 
 namespace lenz\craft\utils\foreignField;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\elements\MatrixBlock;
@@ -46,7 +45,7 @@ abstract class ForeignFieldModel extends Model
    * @return string
    */
   public function getAttributeLabel($attribute) {
-    return $this->_field::t(parent::getAttributeLabel($attribute));
+    return $this->translate(parent::getAttributeLabel($attribute));
   }
 
   /**
@@ -81,6 +80,18 @@ abstract class ForeignFieldModel extends Model
    */
   public function isEmpty() {
     return false;
+  }
+
+
+  // Protected methods
+  // -----------------
+
+  /**
+   * @param string $message
+   * @return string
+   */
+  protected function translate(string $message) {
+    return $this->_field::t($message);
   }
 
 
