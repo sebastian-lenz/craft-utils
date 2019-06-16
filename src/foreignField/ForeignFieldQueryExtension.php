@@ -104,7 +104,7 @@ class ForeignFieldQueryExtension
     ];
 
     if ($this->field::hasPerSiteRecords()) {
-      $conditions[] = "[[$handle.siteId]] = [[elements_sites.id]]";
+      $conditions[] = "[[$handle.siteId]] = [[elements_sites.siteId]]";
     }
 
     $conditionsList = implode(' AND ', $conditions);
@@ -137,7 +137,7 @@ class ForeignFieldQueryExtension
       ? 'json_object'
       : 'json_build_object';
 
-    return "IF([[$handle.id]], {$jsonFunction}({$fieldsList}), null)";
+    return "IF([[$handle.id]] IS NULL, NULL, {$jsonFunction}({$fieldsList}))";
   }
 
 
