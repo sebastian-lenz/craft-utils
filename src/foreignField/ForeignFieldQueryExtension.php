@@ -141,8 +141,8 @@ class ForeignFieldQueryExtension
   }
 
 
-  // Static methods
-  // --------------
+  // Static public methods
+  // ---------------------
 
   /**
    * @param ElementQueryInterface $query
@@ -178,10 +178,25 @@ class ForeignFieldQueryExtension
 
   /**
    * @param ElementQuery $query
+   * @return bool
+   */
+  static public function isCountQuery(ElementQuery $query) {
+    return (
+      count($query->select) == 1 &&
+      reset($query->select) == 'COUNT(*)'
+    );
+  }
+
+
+  // Static protected methods
+  // ------------------------
+
+  /**
+   * @param ElementQuery $query
    * @param ForeignField $field
    * @return bool
    */
-  static private function enableEagerLoad(ElementQuery $query, ForeignField $field) {
+  static protected function enableEagerLoad(ElementQuery $query, ForeignField $field) {
     $handle = $field->handle;
     if ($query->with == $handle) {
       $query->with = null;
@@ -201,7 +216,7 @@ class ForeignFieldQueryExtension
    * @param ForeignField $field
    * @return bool
    */
-  static private function enableJoin(ElementQuery $query, ForeignField $field) {
+  static protected function enableJoin(ElementQuery $query, ForeignField $field) {
     $items = array_merge(
       is_array($query->orderBy) ? $query->orderBy : [(string)$query->orderBy],
       is_array($query->groupBy) ? $query->groupBy : [(string)$query->groupBy]
@@ -214,16 +229,5 @@ class ForeignFieldQueryExtension
     }
 
     return false;
-  }
-
-  /**
-   * @param ElementQuery $query
-   * @return bool
-   */
-  static public function isCountQuery(ElementQuery $query) {
-    return (
-      count($query->select) == 1 &&
-      reset($query->select) == 'COUNT(*)'
-    );
   }
 }
