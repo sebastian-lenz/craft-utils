@@ -61,7 +61,7 @@ class ForeignFieldQueryExtension
   public function onAfterPrepare() {
     $enableEagerLoad = (
       $this->enableEagerLoad &&
-      !self::isCountQuery($this->query)
+      !static::isCountQuery($this->query)
     );
 
     if ($enableEagerLoad || $this->enableJoin) {
@@ -162,8 +162,8 @@ class ForeignFieldQueryExtension
       throw new Exception("The query value for the field {$field->handle} must be an array.");
     }
 
-    $enableEagerLoad = self::enableEagerLoad($query, $field) || $forceEagerLoad;
-    $enableJoin = self::enableJoin($query, $field) || $filters;
+    $enableEagerLoad = static::enableEagerLoad($query, $field) || $forceEagerLoad;
+    $enableJoin = static::enableJoin($query, $field) || $filters;
 
     if ($enableEagerLoad || $enableJoin) {
       new static([
