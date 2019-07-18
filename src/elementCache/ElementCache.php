@@ -23,6 +23,11 @@ use yii\di\ServiceLocator;
 class ElementCache extends ServiceLocator
 {
   /**
+   * @var bool
+   */
+  private static $_shouldUseCache;
+
+  /**
    * @var ElementCache
    */
   private static $_instance;
@@ -94,11 +99,31 @@ class ElementCache extends ServiceLocator
   }
 
   /**
+   * @return bool
+   */
+  static public function shouldUseCache() {
+    if (!isset(self::$_shouldUseCache)) {
+      $request = Craft::$app->getRequest();
+      self::$_shouldUseCache = (
+        is_null($request->getToken()) &&
+        !$request->getIsPreview() &&
+        !$request->getIsLivePreview()
+      );
+    }
+
+    return self::$_shouldUseCache;
+  }
+
+  /**
    * @param string $key
    * @param callable $callback
    * @return mixed
    */
   static public function with(string $key, callable $callback) {
+    if (!self::shouldUseCache()) {
+      return $callback();
+    }
+
     return self::getInstance()->cache->getOrSet($key, $callback);
   }
 
