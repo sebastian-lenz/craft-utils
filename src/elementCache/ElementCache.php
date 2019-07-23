@@ -5,9 +5,9 @@ namespace lenz\craft\utils\elementCache;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\events\ElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\services\Elements;
+use craft\services\Structures;
 use craft\utilities\ClearCaches;
 use Throwable;
 use yii\base\Event;
@@ -56,6 +56,7 @@ class ElementCache extends ServiceLocator
     Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, $listener);
     Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, $listener);
     Event::on(Elements::class, Elements::EVENT_AFTER_MERGE_ELEMENTS, $listener);
+    Event::on(Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT, $listener);
   }
 
   /**
