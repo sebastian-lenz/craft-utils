@@ -136,7 +136,7 @@ class ElementCache extends ServiceLocator
   static public function withElement(string $key, ElementInterface $element, callable $callback) {
     $key .= ';element=' . $element->getId();
     if ($element instanceof Element) {
-      $key .= ';site=' . $element->siteId;
+      $key .= ';site=' . $element->handle;
     }
 
     return self::with($key, $callback);
@@ -151,6 +151,22 @@ class ElementCache extends ServiceLocator
     try {
       $site = Craft::$app->getSites()->getCurrentSite();
       $key .= ';language=' . $site->language;
+    } catch (Throwable $error) {
+      Craft::error($error->getMessage());
+    }
+
+    return self::with($key, $callback);
+  }
+
+  /**
+   * @param string $key
+   * @param callable $callback
+   * @return mixed
+   */
+  static public function withSite(string $key, callable $callback) {
+    try {
+      $site = Craft::$app->getSites()->getCurrentSite();
+      $key .= ';site=' . $site->handle;
     } catch (Throwable $error) {
       Craft::error($error->getMessage());
     }
