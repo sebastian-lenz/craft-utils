@@ -137,7 +137,7 @@ class ElementCache extends ServiceLocator
   static public function withElement(string $key, ElementInterface $element, callable $callback) {
     $key .= ';element=' . $element->getId();
     if ($element instanceof Element) {
-      $key .= ';site=' . $element->handle;
+      $key .= ';siteId=' . $element->siteId;
     }
 
     return self::with($key, $callback);
