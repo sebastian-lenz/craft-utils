@@ -76,7 +76,8 @@ abstract class ForeignField extends Field
     }
 
     return $this->render($template, [
-      'field' => $this,
+      'field'  => $this,
+      'name'   => is_null($this->handle) ? uniqid() : $this->handle,
     ]);
   }
 
@@ -265,7 +266,7 @@ abstract class ForeignField extends Field
       'disabled' => $disabled,
       'element'  => $element,
       'field'    => $this,
-      'name'     => $this->handle,
+      'name'     => is_null($this->handle) ? uniqid() : $this->handle,
       'value'    => $value,
     ]);
   }
