@@ -8,6 +8,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use Exception;
 use Yii;
 
@@ -40,6 +41,16 @@ class ForeignFieldQueryExtension
    * @var ElementQuery
    */
   public $query;
+
+  /**
+   * @var bool
+   */
+  private $_didAttachEagerLoad = false;
+
+  /**
+   * @var bool
+   */
+  private $_didAttachJoin = false;
 
 
   /**
@@ -81,6 +92,9 @@ class ForeignFieldQueryExtension
    * @return void
    */
   protected function attachEagerLoad() {
+    if ($this->_didAttachEagerLoad) return;
+    $this->_didAttachEagerLoad = true;
+
     $this->query->query->addSelect([
       'field:' . $this->field->handle => $this->getJsonExpression(),
     ]);
@@ -90,6 +104,9 @@ class ForeignFieldQueryExtension
    * @return void
    */
   protected function attachJoin() {
+    if ($this->_didAttachJoin) return;
+    $this->_didAttachJoin = true;
+
     /** @var ActiveRecord $recordClass */
     $recordClass = $this->field::recordClass();
     $tableName   = $recordClass::tableName();
@@ -219,7 +236,8 @@ class ForeignFieldQueryExtension
   static protected function enableJoin(ElementQuery $query, ForeignField $field) {
     $items = array_merge(
       is_array($query->orderBy) ? $query->orderBy : [(string)$query->orderBy],
-      is_array($query->groupBy) ? $query->groupBy : [(string)$query->groupBy]
+      is_array($query->groupBy) ? $query->groupBy : [(string)$query->groupBy],
+      [Json::encode($query->where)]
     );
 
     foreach ($items as $item) {
