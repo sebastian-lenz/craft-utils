@@ -52,12 +52,18 @@ class ForeignFieldQueryExtension
    */
   private $_didAttachJoin = false;
 
+  /**
+   * @var ForeignFieldQueryExtension[]
+   */
+  private static $INSTANCES = array();
+
 
   /**
    * ForeignFieldQueryExtension constructor.
    * @param array $config
    */
   public function __construct(array $config) {
+    self::$INSTANCES[] = $this;
     Yii::configure($this, $config);
 
     $this->query->on(
@@ -87,6 +93,23 @@ class ForeignFieldQueryExtension
 
   // Protected methods
   // -----------------
+
+  /**
+   * @param array $options
+   * @return ForeignFieldQueryExtension
+   */
+  protected function applyOptions(array $options) {
+    $this->enableEagerLoad = $this->enableEagerLoad || $options['enableEagerLoad'];
+    $this->enableJoin = $this->enableJoin || $options['enableJoin'];
+
+    if (is_array($options['filters'])) {
+      $this->filters = is_array($this->filters)
+        ? array_merge($this->filters, $options['filters'])
+        : $options['filters'];
+    }
+
+    return $this;
+  }
 
   /**
    * @return void
@@ -164,33 +187,41 @@ class ForeignFieldQueryExtension
   /**
    * @param ElementQueryInterface $query
    * @param ForeignField $field
-   * @param mixed $filters
-   * @param bool $forceEagerLoad
+   * @param array $options
+   * @return ForeignFieldQueryExtension|void|null
    * @throws Exception
    */
-  static public function attachTo(ElementQueryInterface $query, ForeignField $field, $filters, $forceEagerLoad = false) {
+  static public function attachTo(ElementQueryInterface $query, ForeignField $field, array $options = []) {
     if (!($query instanceof ElementQuery)) {
       return;
     }
 
-    if (empty($filters)) {
-      $filters = null;
-    } elseif (!is_array($filters)) {
-      throw new Exception("The query value for the field {$field->handle} must be an array.");
-    }
+    $filters         = ArrayHelper::getValue($options, 'filters', null);
+    $forceEagerLoad  = !!ArrayHelper::getValue($options, 'forceEagerLoad', false);
+    $forceJoin       = !!ArrayHelper::getValue($options, 'forceJoin', false);
 
     $enableEagerLoad = static::enableEagerLoad($query, $field) || $forceEagerLoad;
-    $enableJoin = static::enableJoin($query, $field) || $filters;
+    $enableJoin      = static::enableJoin($query, $field) || $filters || $forceJoin;
 
     if ($enableEagerLoad || $enableJoin) {
-      new static([
+      $options = [
         'enableEagerLoad' => $enableEagerLoad,
         'enableJoin'      => $enableJoin,
         'field'           => $field,
         'filters'         => $filters,
         'query'           => $query,
-      ]);
+      ];
+
+      foreach (self::$INSTANCES as $instance) {
+        if ($instance->query === $query) {
+          return $instance->applyOptions($options);
+        }
+      }
+
+      return new static($options);
     }
+
+    return null;
   }
 
   /**
@@ -240,8 +271,11 @@ class ForeignFieldQueryExtension
       [Json::encode($query->where)]
     );
 
-    foreach ($items as $item) {
-      if (strpos($item, $field->handle) !== false) {
+    foreach ($items as $key => $value) {
+      if (
+        strpos($key, $field->handle) !== false ||
+        strpos($value, $field->handle) !== false
+      ) {
         return true;
       }
     }

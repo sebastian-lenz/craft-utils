@@ -112,7 +112,10 @@ abstract class ForeignField extends Field
    * @throws Exception
    */
   public function modifyElementsQuery(ElementQueryInterface $query, $value) {
-    static::queryExtensionClass()::attachTo($query, $this, $value);
+    static::queryExtensionClass()::attachTo($query, $this, [
+      'filter' => self::prepareQueryFilter($value),
+    ]);
+
     return null;
   }
 
@@ -121,7 +124,9 @@ abstract class ForeignField extends Field
    * @throws Exception
    */
   public function modifyElementIndexQuery(ElementQueryInterface $query) {
-    static::queryExtensionClass()::attachTo($query, $this, null, true);
+    static::queryExtensionClass()::attachTo($query, $this, [
+      'forceEagerLoad' => true,
+    ]);
   }
 
   /**
@@ -272,6 +277,30 @@ abstract class ForeignField extends Field
   }
 
   /**
+   * @param mixed $value
+   * @return mixed
+   * @throws Exception
+   */
+  protected function prepareQueryFilter($value) {
+    if (empty($value)) {
+      return null;
+    }
+
+    if (!is_array($value)) {
+      throw new Exception("The query value for the field {$this->handle} must be an array.");
+    }
+
+    $fields = self::recordModelAttributes();
+    foreach ($value as $field => $condition) {
+      if (!in_array($field, $fields)) {
+        throw new Exception("The query for the field {$this->handle} refers to an unknown field '{$field}'.");
+      }
+    }
+
+    return $value;
+  }
+
+  /**
    * @param string $template
    * @param array $variables
    * @return string
@@ -358,7 +387,7 @@ abstract class ForeignField extends Field
 
   /**
    * The query extension class used by this field.
-   * @return string
+   * @return string|ForeignFieldQueryExtension
    */
   public static function queryExtensionClass(): string {
     return ForeignFieldQueryExtension::class;
