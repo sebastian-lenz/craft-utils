@@ -115,7 +115,7 @@ abstract class ForeignField extends Field
    */
   public function modifyElementsQuery(ElementQueryInterface $query, $value) {
     static::queryExtensionClass()::attachTo($query, $this, [
-      'filter' => self::prepareQueryFilter($value),
+      'filter' => static::prepareQueryFilter($value),
     ]);
 
     return null;
@@ -295,7 +295,7 @@ abstract class ForeignField extends Field
       throw new Exception("The query value for the field {$this->handle} must be an array.");
     }
 
-    $fields = self::recordModelAttributes();
+    $fields = static::recordModelAttributes();
     foreach ($value as $field => $condition) {
       if (!in_array($field, $fields)) {
         throw new Exception("The query for the field {$this->handle} refers to an unknown field '{$field}'.");
