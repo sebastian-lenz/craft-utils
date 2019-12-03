@@ -28,6 +28,8 @@ abstract class ForeignField extends Field
       throw new Exception('Invalid value');
     }
 
+    $model = $model->withOwner($element);
+
     if ($this->shouldUpdateRecord($model, $element)) {
       $attributes = $this->toRecordAttributes($model, $element);
       $record     = $this->findOrCreateRecord($element);
@@ -179,7 +181,10 @@ abstract class ForeignField extends Field
    * @param ElementInterface $element
    */
   protected function applyRecordAttributes(ActiveRecord $record, array $attributes, ElementInterface $element) {
-    $isPropagating = $element instanceof Element && $element->propagating;
+    $isPropagating =
+      $element instanceof Element &&
+      $element->propagating &&
+      !$record->isNewRecord;
 
     foreach ($attributes as $name => $value) {
       // Skip all attributes that are not propagated

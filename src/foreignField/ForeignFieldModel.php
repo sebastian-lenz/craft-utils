@@ -22,13 +22,14 @@ abstract class ForeignFieldModel extends Model
   protected $_owner;
 
   /**
-   * @var ElementInterface|null
+   * @var ElementInterface|null|false
    */
-  protected $_root;
+  protected $_root = false;
 
 
   /**
    * ForeignModel constructor.
+   *
    * @param ForeignField $field
    * @param ElementInterface|null $owner
    * @param array $config
@@ -66,7 +67,7 @@ abstract class ForeignFieldModel extends Model
    * @return ElementInterface|null
    */
   public function getRoot() {
-    if (!isset($this->_root)) {
+    if ($this->_root === false) {
       $this->_root = is_null($this->_owner)
         ? null
         : $this->getParentElement($this->_owner);
@@ -80,6 +81,21 @@ abstract class ForeignFieldModel extends Model
    */
   public function isEmpty() {
     return false;
+  }
+
+  /**
+   * @param ElementInterface|null $owner
+   * @return $this
+   */
+  public function withOwner($owner) {
+    if ($this->_owner === $owner) {
+      return $this;
+    }
+
+    $model = clone $this;
+    $model->_owner = $owner;
+    $model->_root = false;
+    return $model;
   }
 
 
