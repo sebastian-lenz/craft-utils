@@ -115,7 +115,7 @@ abstract class ForeignField extends Field
    */
   public function modifyElementsQuery(ElementQueryInterface $query, $value) {
     static::queryExtensionClass()::attachTo($query, $this, [
-      'filter' => static::prepareQueryFilter($value),
+      'filters' => static::prepareQueryFilter($value),
     ]);
 
     return null;
