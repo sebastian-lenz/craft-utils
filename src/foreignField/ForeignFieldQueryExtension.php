@@ -77,8 +77,10 @@ class ForeignFieldQueryExtension
    */
   public function onAfterPrepare() {
     $enableEagerLoad = (
-      $this->enableEagerLoad &&
-      !static::isCountQuery($this->query)
+      $this->enableEagerLoad && (
+        !empty($this->filters) ||
+        !static::isCountQuery($this->query)
+      )
     );
 
     if ($enableEagerLoad || $this->enableJoin) {
