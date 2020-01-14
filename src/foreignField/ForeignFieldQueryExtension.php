@@ -43,16 +43,6 @@ class ForeignFieldQueryExtension
   public $query;
 
   /**
-   * @var bool
-   */
-  private $_didAttachEagerLoad = false;
-
-  /**
-   * @var bool
-   */
-  private $_didAttachJoin = false;
-
-  /**
    * @var ForeignFieldQueryExtension[]
    */
   private static $INSTANCES = array();
@@ -117,9 +107,6 @@ class ForeignFieldQueryExtension
    * @return void
    */
   protected function attachEagerLoad() {
-    if ($this->_didAttachEagerLoad) return;
-    $this->_didAttachEagerLoad = true;
-
     $this->query->query->addSelect([
       'field:' . $this->field->handle => $this->getJsonExpression(),
     ]);
@@ -129,9 +116,6 @@ class ForeignFieldQueryExtension
    * @return void
    */
   protected function attachJoin() {
-    if ($this->_didAttachJoin) return;
-    $this->_didAttachJoin = true;
-
     /** @var ActiveRecord $recordClass */
     $recordClass = $this->field::recordClass();
     $tableName   = $recordClass::tableName();
