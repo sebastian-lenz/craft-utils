@@ -272,6 +272,17 @@ abstract class ForeignField extends Field
    * @return string
    */
   protected function getHtml(ForeignFieldModel $value, ElementInterface $element = null, $disabled = false) {
+    /**
+     * Craft 3.5 introduces a strange behaviour that calls the render function
+     * on another instance of the field than the field has been created with.
+     * We reroute this call to the actual field the value has been created with.
+     * @see https://github.com/craftcms/cms/issues/6478
+     */
+    $actualField = $value->getField();
+    if ($actualField !== $this) {
+      return $actualField->getHtml($value, $element, $disabled);
+    }
+
     return $this->render(static::inputTemplate(), [
       'disabled' => $disabled,
       'element'  => $element,
