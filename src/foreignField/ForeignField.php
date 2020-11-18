@@ -454,5 +454,11 @@ abstract class ForeignField extends Field
   public static function t(string $message): string {
     return Craft::t('site', $message);
   }
-}
 
+  /**
+   * @inheritdoc
+   */
+  public static function valueType(): string {
+    return static::modelClass();
+  }
+}
