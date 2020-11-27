@@ -42,6 +42,13 @@ abstract class ForeignFieldModel extends Model
   }
 
   /**
+   * @return array
+   */
+  public function __sleep() {
+    return [];
+  }
+
+  /**
    * @param string $attribute
    * @return string
    */
