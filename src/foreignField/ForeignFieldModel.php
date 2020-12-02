@@ -2,14 +2,19 @@
 
 namespace lenz\craft\utils\foreignField;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\elements\MatrixBlock;
+use craft\helpers\ArrayHelper;
+use lenz\craft\utils\helpers\ElementHelpers;
+use Serializable;
+use yii\base\InvalidConfigException;
 
 /**
  * Class ForeignModel
  */
-abstract class ForeignFieldModel extends Model
+abstract class ForeignFieldModel extends Model implements Serializable
 {
   /**
    * @var ForeignField
@@ -44,13 +49,14 @@ abstract class ForeignFieldModel extends Model
   /**
    * @return array
    */
-  public function __sleep() {
-    return [];
+  public function __debugInfo() {
+    return $this->attributes;
   }
 
   /**
    * @param string $attribute
    * @return string
+   * @noinspection PhpMissingParamTypeInspection
    */
   public function getAttributeLabel($attribute) {
     return $this->translate(parent::getAttributeLabel($attribute));
@@ -72,6 +78,7 @@ abstract class ForeignFieldModel extends Model
 
   /**
    * @return ElementInterface|null
+   * @throws InvalidConfigException
    */
   public function getRoot() {
     if ($this->_root === false) {
@@ -91,10 +98,25 @@ abstract class ForeignFieldModel extends Model
   }
 
   /**
+   * @inheritDoc
+   */
+  public function serialize() {
+    return serialize($this->getSerializedData());
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function unserialize($value) {
+    $value = unserialize($value);
+    $this->setSerializedData(is_array($value) ? $value : []);
+  }
+
+  /**
    * @param ElementInterface|null $owner
    * @return $this
    */
-  public function withOwner($owner) {
+  public function withOwner(?ElementInterface $owner) {
     if ($this->_owner === $owner) {
       return $this;
     }
@@ -108,6 +130,35 @@ abstract class ForeignFieldModel extends Model
 
   // Protected methods
   // -----------------
+
+  /**
+   * @return array
+   */
+  protected function getSerializedData() : array {
+    return [
+      '_attributes' => $this->attributes,
+      '_field' => $this->_field->handle,
+      '_owner' => ElementHelpers::serialize($this->_owner),
+    ];
+  }
+
+  /**
+   * @param array $data
+   */
+  protected function setSerializedData(array $data) {
+    $this->_field = Craft::$app->getFields()->getFieldByHandle(
+      (string)ArrayHelper::getValue($data, '_field', '')
+    );
+
+    $this->_owner = ElementHelpers::unserialize(
+      ArrayHelper::getValue($data, '_owner')
+    );
+
+    $attributes = ArrayHelper::getValue($data, '_attributes');
+    if (is_array($attributes)) {
+      $this->setAttributes($attributes);
+    }
+  }
 
   /**
    * @param string $message
@@ -124,6 +175,7 @@ abstract class ForeignFieldModel extends Model
   /**
    * @param ElementInterface $element
    * @return ElementInterface
+   * @throws InvalidConfigException
    */
   private function getParentElement(ElementInterface $element) {
     if ($element instanceof MatrixBlock) {
