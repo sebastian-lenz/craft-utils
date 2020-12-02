@@ -94,6 +94,7 @@ abstract class ForeignField extends Field
   /**
    * @param string $attribute
    * @return bool
+   * @noinspection PhpUnusedParameterInspection
    */
   public function isAttributePropagated(string $attribute) {
     return true;
@@ -341,6 +342,7 @@ abstract class ForeignField extends Field
    * @param ForeignFieldModel $model
    * @param ElementInterface $element
    * @return bool
+   * @noinspection PhpUnusedParameterInspection
    */
   protected function shouldUpdateRecord(ForeignFieldModel $model, ElementInterface $element) {
     if (
@@ -358,6 +360,7 @@ abstract class ForeignField extends Field
    * @param ActiveRecord $record
    * @param ElementInterface|null $element
    * @return array
+   * @noinspection PhpUnusedParameterInspection
    */
   protected function toModelAttributes(ActiveRecord $record, ElementInterface $element = null) {
     return $record->getAttributes(static::recordModelAttributes());
@@ -367,6 +370,7 @@ abstract class ForeignField extends Field
    * @param ForeignFieldModel $model
    * @param ElementInterface $element
    * @return array
+   * @noinspection PhpUnusedParameterInspection
    */
   protected function toRecordAttributes(ForeignFieldModel $model, ElementInterface $element) {
     return $model->getAttributes(static::recordModelAttributes());

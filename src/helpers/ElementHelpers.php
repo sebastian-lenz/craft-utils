@@ -5,6 +5,7 @@ namespace lenz\craft\utils\helpers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
+use Throwable;
 
 /**
  * Class ElementHelpers
@@ -25,7 +26,7 @@ class ElementHelpers
       if (!empty($element->siteId)) {
         $siteId = intval($element->siteId);
       }
-    } catch (\Throwable $error) {
+    } catch (Throwable $error) {
       // Ignore
     }
 

@@ -116,7 +116,7 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @param ElementInterface|null $owner
    * @return $this
    */
-  public function withOwner(?ElementInterface $owner) {
+  public function withOwner(ElementInterface $owner = null) {
     if ($this->_owner === $owner) {
       return $this;
     }
