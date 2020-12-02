@@ -3,7 +3,7 @@
   "description": "A collection of utility classes for Craft CMS development",
   "license": "MIT",
   "require": {
-    "php": ">=7.0.0",
+    "php": ">=7.4",
     "craftcms/cms": "^3.2.4"
   },
   "autoload": {
