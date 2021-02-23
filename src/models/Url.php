@@ -12,42 +12,42 @@ class Url extends Model
   /**
    * @var string|null
    */
-  public $fragment;
+  public $fragment = null;
 
   /**
    * @var string|null
    */
-  public $host;
+  public $host = null;
 
   /**
    * @var string|null
    */
-  public $pass;
+  public $pass = null;
 
   /**
    * @var string|null
    */
-  public $path;
+  public $path = null;
 
   /**
    * @var string|null
    */
-  public $port;
+  public $port = null;
 
   /**
    * @var string|null
    */
-  public $query;
+  public $query = null;
 
   /**
    * @var string|null
    */
-  public $scheme;
+  public $scheme = null;
 
   /**
    * @var string|null
    */
-  public $user;
+  public $user = null;
 
   /**
    * @var array
@@ -97,25 +97,25 @@ class Url extends Model
   /**
    * @return string
    */
-  public function getAuthentication() {
+  public function getAuthentication(): string {
     return implode(':', array_filter([
-      isset($this->user) ? $this->user : '',
-      isset($this->pass) ? $this->pass : '',
+      empty($this->user) ? '' : $this->user,
+      empty($this->pass) ? '' : $this->pass,
     ]));
   }
 
   /**
    * @return string|null
    */
-  public function getFragment() {
-    return isset($this->fragment) ? (string)$this->fragment : null;
+  public function getFragment(): ?string {
+    return empty($this->fragment) ? null : (string)$this->fragment;
   }
 
   /**
    * @return array
    */
-  public function getQuery() {
-    if (!isset($this->query)) {
+  public function getQuery(): array {
+    if (empty($this->query)) {
       return [];
     }
 
@@ -138,7 +138,7 @@ class Url extends Model
    */
   public function setFragment(string $fragment = null) {
     if (empty($fragment)) {
-      unset($this->fragment);
+      $this->fragment = null;
     } else {
       $this->fragment = $fragment;
     }
@@ -148,8 +148,8 @@ class Url extends Model
    * @param array $query
    */
   public function setQuery(array $query) {
-    if (count($query) === 0) {
-      unset($this->query);
+    if (empty($query)) {
+      $this->query = null;
     } else {
       $parts = [];
       foreach ($query as $key => $value) {
