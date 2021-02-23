@@ -97,7 +97,7 @@ class Url extends Model
   /**
    * @return string
    */
-  public function getAuthentication(): string {
+  public function getAuthentication() {
     return implode(':', array_filter([
       empty($this->user) ? '' : $this->user,
       empty($this->pass) ? '' : $this->pass,
@@ -107,14 +107,14 @@ class Url extends Model
   /**
    * @return string|null
    */
-  public function getFragment(): ?string {
+  public function getFragment() {
     return empty($this->fragment) ? null : (string)$this->fragment;
   }
 
   /**
    * @return array
    */
-  public function getQuery(): array {
+  public function getQuery() {
     if (empty($this->query)) {
       return [];
     }
