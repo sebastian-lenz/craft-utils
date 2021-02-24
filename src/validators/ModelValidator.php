@@ -1,7 +1,8 @@
 <?php
 
-namespace lenz\craft\utils\models;
+namespace lenz\craft\utils\validators;
 
+use Craft;
 use yii\base\Model;
 use yii\validators\Validator;
 
@@ -40,13 +41,13 @@ class ModelValidator extends Validator
    * @inheritDoc
    */
   protected function validateValue($value) {
-    if (!$value instanceof $this->$modelClass) {
+    if (!$value instanceof $this->modelClass) {
       return [$this->message, ['modelClass' => $this->modelClass]];
     }
 
     /** @var Model $value */
     if (!$value->validate()) {
-      return [$this->invalid, ['error' => implode(' ', $value->getErrorSummary())]];
+      return [$this->invalid, ['error' => implode(' ', $value->getErrorSummary(true))]];
     }
 
     return null;

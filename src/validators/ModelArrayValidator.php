@@ -1,7 +1,8 @@
 <?php
 
-namespace lenz\craft\utils\models;
+namespace lenz\craft\utils\validators;
 
+use Craft;
 use craft\validators\ArrayValidator;
 use yii\base\Model;
 
@@ -51,7 +52,7 @@ class ModelArrayValidator extends ArrayValidator
     }
 
     foreach ($value as $index => $member) {
-      if (!$member instanceof $this->$modelClass) {
+      if (!$member instanceof $this->modelClass) {
         return [$this->message, [
           'index' => $index,
           'modelClass' => $this->modelClass
@@ -62,7 +63,7 @@ class ModelArrayValidator extends ArrayValidator
       if (!$member->validate()) {
         return [$this->invalid, [
           'index' => $index,
-          'error' => implode(' ', $member->getErrorSummary())
+          'error' => implode(' ', $member->getErrorSummary(true))
         ]];
       }
     }
