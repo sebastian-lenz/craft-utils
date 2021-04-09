@@ -1,0 +1,63 @@
+<?php
+
+namespace lenz\craft\utils\events;
+
+use craft\base\ElementInterface;
+use yii\base\Event;
+
+/**
+ * Class AnchorEvent
+ */
+class AnchorEvent extends AbstractElementEvent
+{
+  /**
+   * @var string|null
+   */
+  public $anchor = null;
+
+  /**
+   * @var string
+   */
+  public $id;
+
+  /**
+   * @var string
+   */
+  const EVENT_RESOLVE_ANCHOR_ID = 'resolveAnchorId';
+
+  /**
+   * @var string
+   */
+  const ID_PREFIX = '#@id:';
+
+
+  // Static methods
+  // --------------
+
+  /**
+   * @param string $value
+   * @return bool
+   */
+  static public function isAnchorId(string $value): bool {
+    return substr($value, 0, strlen(self::ID_PREFIX)) == self::ID_PREFIX;
+  }
+
+  /**
+   * @param string $anchor
+   * @param ElementInterface $element
+   * @return string|null
+   */
+  static public function resolveAnchor(string $anchor, ElementInterface $element): ?string {
+    if (!self::isAnchorId($anchor)) {
+      return $anchor;
+    }
+
+    $event = new AnchorEvent([
+      'id' => substr($anchor, strlen(self::ID_PREFIX)),
+      'element' => $element,
+    ]);
+
+    Event::trigger(AnchorsEvent::class, self::EVENT_RESOLVE_ANCHOR_ID, $event);
+    return $event->anchor;
+  }
+}
