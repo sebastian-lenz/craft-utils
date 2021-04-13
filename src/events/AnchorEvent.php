@@ -57,7 +57,7 @@ class AnchorEvent extends AbstractElementEvent
       'element' => $element,
     ]);
 
-    Event::trigger(AnchorsEvent::class, self::EVENT_RESOLVE_ANCHOR_ID, $event);
+    Event::trigger(AnchorEvent::class, self::EVENT_RESOLVE_ANCHOR_ID, $event);
     return $event->anchor;
   }
 }
