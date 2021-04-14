@@ -52,7 +52,7 @@ class Url extends Model
   /**
    * @var array
    */
-  const GLUES = [
+  const DEFAULT_GLUES = [
     ['scheme',   '',  '://'],
     ['auth',     '',  '@'],
     ['host',     '',  ''],
@@ -60,6 +60,15 @@ class Url extends Model
     ['path',     '',  ''],
     ['query',    '?', ''],
     ['fragment', '#', ''],
+  ];
+
+  /**
+   * @var array
+   */
+  const MAILTO_GLUES = [
+    ['scheme', '',  ':'],
+    ['path',   '',  ''],
+    ['query',  '?', ''],
   ];
 
 
@@ -76,12 +85,13 @@ class Url extends Model
    */
   public function __toString() {
     $result = [];
+    $glues = $this->isMailTo() ? self::MAILTO_GLUES : self::DEFAULT_GLUES;
     $parts = $this->attributes + [
       'auth' => $this->getAuthentication(),
     ];
 
-    foreach (self::GLUES as list($key, $prefix, $suffix)) {
-      $value = isset($parts[$key]) ? $parts[$key] : '';
+    foreach ($glues as list($key, $prefix, $suffix)) {
+      $value = $parts[$key] ?? '';
       if (!empty($value)) {
         array_push($result, $prefix, $value, $suffix);
       }
@@ -119,7 +129,9 @@ class Url extends Model
       return [];
     }
 
-    $result = array();
+    $result = [];
+    $isMailTo = $this->isMailTo();
+
     foreach (explode('&', $this->query) as $param) {
       $parts = explode('=', $param, 2);
       if (count($parts) !== 2) {
@@ -127,10 +139,18 @@ class Url extends Model
       }
 
       list($key, $value) = $parts;
-      $result[$key] = urldecode($value);
+      $value = $isMailTo ? rawurldecode($value) : urldecode($value);
+      $result[urldecode($key)] = $value;
     }
 
     return $result;
+  }
+
+  /**
+   * @return bool
+   */
+  public function isMailTo(): bool {
+    return $this->scheme == 'mailto';
   }
 
   /**
@@ -152,8 +172,11 @@ class Url extends Model
       $this->query = null;
     } else {
       $parts = [];
+      $isMailTo = $this->isMailTo();
+
       foreach ($query as $key => $value) {
-        $parts[] = $key . '=' . urlencode($value);
+        $value = $isMailTo ? rawurlencode($value) : urlencode($value);
+        $parts[] = urlencode($key) . '=' . $value;
       }
 
       $this->query = implode('&', $parts);
