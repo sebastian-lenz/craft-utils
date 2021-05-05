@@ -6,7 +6,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\elements\MatrixBlock;
-use craft\helpers\ArrayHelper;
+use lenz\craft\utils\helpers\ArrayHelper;
 use lenz\craft\utils\helpers\ElementHelpers;
 use Serializable;
 use yii\base\InvalidConfigException;
@@ -107,9 +107,9 @@ abstract class ForeignFieldModel extends Model implements Serializable
   /**
    * @inheritDoc
    */
-  public function unserialize($value) {
-    $value = unserialize($value);
-    $this->setSerializedData(is_array($value) ? $value : []);
+  public function unserialize($data) {
+    $data = unserialize($data);
+    $this->setSerializedData(is_array($data) ? $data : []);
   }
 
   /**
@@ -147,16 +147,16 @@ abstract class ForeignFieldModel extends Model implements Serializable
    */
   protected function setSerializedData(array $data) {
     $this->_field = Craft::$app->getFields()->getFieldByHandle(
-      (string)ArrayHelper::getValue($data, '_field', '')
+      (string)ArrayHelper::get($data, '_field', '')
     );
 
     $this->_owner = ElementHelpers::unserialize(
-      ArrayHelper::getValue($data, '_owner')
+      ArrayHelper::get($data, '_owner')
     );
 
-    $attributes = ArrayHelper::getValue($data, '_attributes');
+    $attributes = ArrayHelper::get($data, '_attributes');
     if (is_array($attributes)) {
-      $this->setAttributes($attributes);
+      $this->setAttributes($attributes, false);
     }
   }
 
