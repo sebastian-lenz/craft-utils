@@ -5,6 +5,7 @@ namespace lenz\craft\utils\helpers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
+use Exception;
 use Throwable;
 
 /**
@@ -40,6 +41,7 @@ class ElementHelpers
   /**
    * @param mixed $value
    * @return ElementInterface|null
+   * @throws Exception
    */
   static public function unserialize($value) {
     $id = ArrayHelper::getValue($value, 'id');
