@@ -154,7 +154,16 @@ class Url extends Model
   }
 
   /**
+   * @param array $query
+   * @return $this
+   */
+  public function mergeQuery(array $query): Url {
+    return $this->setQuery(array_merge($query, $this->getQuery()));
+  }
+
+  /**
    * @param string|null $fragment
+   * @return $this
    */
   public function setFragment(string $fragment = null) {
     if (empty($fragment)) {
@@ -162,12 +171,15 @@ class Url extends Model
     } else {
       $this->fragment = $fragment;
     }
+
+    return $this;
   }
 
   /**
    * @param array $query
+   * @return $this
    */
-  public function setQuery(array $query) {
+  public function setQuery(array $query): Url {
     if (empty($query)) {
       $this->query = null;
     } else {
@@ -181,5 +193,28 @@ class Url extends Model
 
       $this->query = implode('&', $parts);
     }
+
+    return $this;
+  }
+
+
+  // Static methods
+  // --------------
+
+  /**
+   * @param string $url
+   * @param array $query
+   * @return string
+   */
+  static public function compose(string $url, array $query = []): string {
+    return (string)Url::create($url)->mergeQuery($query);
+  }
+
+  /**
+   * @param string $url
+   * @return Url
+   */
+  static public function create(string $url): Url {
+    return new Url($url);
   }
 }
