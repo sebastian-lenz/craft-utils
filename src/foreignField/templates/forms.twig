@@ -11,6 +11,20 @@
   }|merge(options)) }}
 {% endmacro %}
 
+{% macro checkboxGroupField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.checkboxGroupField({
+    checked: model[name],
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    options: model.getAttributeOptions(name),
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+  }|merge(options)) }}
+{% endmacro %}
+
 {% macro dateField(model, name, options = {}) %}
   {% import "_includes/forms" as forms %}
 
