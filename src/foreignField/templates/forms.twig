@@ -51,6 +51,20 @@
   }|merge(options)) }}
 {% endmacro %}
 
+{% macro multiselectField(model, name, options = {}) %}
+  {% import "_includes/forms" as forms %}
+
+  {{ forms.multiselectField({
+    errors: model.getErrors(name),
+    label: model.getAttributeLabel(name),
+    name: name,
+    options: model.getAttributeOptions(name),
+    required: model.isAttributeRequired(name),
+    translatable: not model.field.isAttributePropagated(name),
+    values: model[name],
+  }|merge(options)) }}
+{% endmacro %}
+
 {% macro redactorField(model, name, options = {}) %}
   {% import "_includes/forms" as forms %}
 
