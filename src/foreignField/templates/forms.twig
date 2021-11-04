@@ -15,13 +15,13 @@
   {% import "_includes/forms" as forms %}
 
   {{ forms.checkboxGroupField({
-    checked: model[name],
     errors: model.getErrors(name),
     label: model.getAttributeLabel(name),
     name: name,
     options: model.getAttributeOptions(name),
     required: model.isAttributeRequired(name),
     translatable: not model.field.isAttributePropagated(name),
+    values: model[name],
   }|merge(options)) }}
 {% endmacro %}
 
