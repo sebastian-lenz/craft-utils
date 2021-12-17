@@ -169,7 +169,7 @@ abstract class ForeignField extends Field
    * @inheritdoc
    */
   public function serializeValue($value, ElementInterface $element = null) {
-    return $this->toRecordAttributes($value, $element);
+    return Json::encode($this->toRecordAttributes($value, $element));
   }
 
 
