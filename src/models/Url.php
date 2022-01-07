@@ -180,20 +180,24 @@ class Url extends Model
    * @return $this
    */
   public function setQuery(array $query): Url {
-    if (empty($query)) {
-      $this->query = null;
-    } else {
-      $parts = [];
-      $isMailTo = $this->isMailTo();
+    $parts = [];
+    $isMailTo = $this->isMailTo();
 
-      foreach ($query as $key => $value) {
-        $value = $isMailTo ? rawurlencode($value) : urlencode($value);
-        $parts[] = urlencode($key) . '=' . $value;
+    foreach ($query as $key => $value) {
+      if ($value instanceof UrlParameter) {
+        $value = $value->value;
+      } elseif ($isMailTo) {
+        $value = rawurlencode($value);
+      } else {
+        $value = urlencode($value);
       }
 
-      $this->query = implode('&', $parts);
+      if (!empty($value)) {
+        $parts[] = urlencode($key) . '=' . $value;
+      }
     }
 
+    $this->query = empty($parts) ? null : implode('&', $parts);
     return $this;
   }
 
