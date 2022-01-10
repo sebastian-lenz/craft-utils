@@ -184,6 +184,10 @@ class Url extends Model
     $isMailTo = $this->isMailTo();
 
     foreach ($query as $key => $value) {
+      if (is_null($value)) {
+        continue;
+      }
+
       if ($value instanceof UrlParameter) {
         $value = $value->value;
       } elseif ($isMailTo) {
@@ -192,9 +196,7 @@ class Url extends Model
         $value = urlencode($value);
       }
 
-      if (!empty($value)) {
-        $parts[] = urlencode($key) . '=' . $value;
-      }
+      $parts[] = urlencode($key) . '=' . $value;
     }
 
     $this->query = empty($parts) ? null : implode('&', $parts);
