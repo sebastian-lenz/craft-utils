@@ -10,5 +10,11 @@
     "psr-4": {
       "lenz\\craft\\utils\\": "src/"
     }
+  },
+  "config": {
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
   }
 }
