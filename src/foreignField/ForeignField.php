@@ -64,7 +64,7 @@ abstract class ForeignField extends Field
   /**
    * @inheritDoc
    */
-  public function getInputHtml($value, ?\craft\base\ElementInterface $element = null): string {
+  public function getInputHtml($value, ?ElementInterface $element = null): string {
     return $this->getHtml($value, $element, false);
   }
 
@@ -136,7 +136,7 @@ abstract class ForeignField extends Field
    * @inheritDoc
    * @throws Exception
    */
-  public function normalizeValue($value, ?\craft\base\ElementInterface $element = null) {
+  public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed {
     $modelClass = static::modelClass();
     if (is_a($value, $modelClass)) {
       return $value;
@@ -168,7 +168,7 @@ abstract class ForeignField extends Field
   /**
    * @inheritdoc
    */
-  public function serializeValue($value, ?\craft\base\ElementInterface $element = null) {
+  public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed {
     return Json::encode($this->toRecordAttributes($value, $element));
   }
 
