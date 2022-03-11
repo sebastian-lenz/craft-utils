@@ -119,7 +119,7 @@ abstract class ForeignField extends Field
       'filters' => static::prepareQueryFilter($value),
     ]);
 
-    return null;
+    return;
   }
 
   /**
