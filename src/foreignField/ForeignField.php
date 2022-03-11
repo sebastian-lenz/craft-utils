@@ -22,7 +22,7 @@ abstract class ForeignField extends Field
    * @inheritDoc
    * @throws Exception
    */
-  public function afterElementSave(ElementInterface $element, bool $isNew) {
+  public function afterElementSave(ElementInterface $element, bool $isNew): void {
     $model = $element->getFieldValue($this->handle);
     if (!is_a($model, static::modelClass())) {
       throw new Exception('Invalid value');
@@ -44,7 +44,7 @@ abstract class ForeignField extends Field
   /**
    * @inheritDoc
    */
-  public function behaviors() {
+  public function behaviors(): array {
     return [
       'typecast' => [
         'class' => AttributeTypecastBehavior::class,
@@ -64,14 +64,14 @@ abstract class ForeignField extends Field
   /**
    * @inheritDoc
    */
-  public function getInputHtml($value, ElementInterface $element = null): string {
+  public function getInputHtml($value, ?\craft\base\ElementInterface $element = null): string {
     return $this->getHtml($value, $element, false);
   }
 
   /**
    * @inheritDoc
    */
-  public function getSettingsHtml() {
+  public function getSettingsHtml(): ?string {
     $template = static::settingsTemplate();
     if (empty($template)) {
       return null;
@@ -114,7 +114,7 @@ abstract class ForeignField extends Field
    * @inheritDoc
    * @throws Exception
    */
-  public function modifyElementsQuery(ElementQueryInterface $query, $value) {
+  public function modifyElementsQuery(ElementQueryInterface $query, $value): void {
     static::queryExtensionClass()::attachTo($query, $this, [
       'filters' => static::prepareQueryFilter($value),
     ]);
@@ -126,7 +126,7 @@ abstract class ForeignField extends Field
    * @inheritDoc
    * @throws Exception
    */
-  public function modifyElementIndexQuery(ElementQueryInterface $query) {
+  public function modifyElementIndexQuery(ElementQueryInterface $query): void {
     static::queryExtensionClass()::attachTo($query, $this, [
       'forceEagerLoad' => true,
     ]);
@@ -136,7 +136,7 @@ abstract class ForeignField extends Field
    * @inheritDoc
    * @throws Exception
    */
-  public function normalizeValue($value, ElementInterface $element = null) {
+  public function normalizeValue($value, ?\craft\base\ElementInterface $element = null) {
     $modelClass = static::modelClass();
     if (is_a($value, $modelClass)) {
       return $value;
@@ -168,7 +168,7 @@ abstract class ForeignField extends Field
   /**
    * @inheritdoc
    */
-  public function serializeValue($value, ElementInterface $element = null) {
+  public function serializeValue($value, ?\craft\base\ElementInterface $element = null) {
     return Json::encode($this->toRecordAttributes($value, $element));
   }
 
