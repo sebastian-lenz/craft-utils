@@ -15,6 +15,12 @@ use yii\behaviors\AttributeTypecastBehavior;
 
 /**
  * Class ForeignField
+ *
+ * The following methods are intended to be overwritten by child classes:
+ * - inputTemplate
+ * - modelClass
+ * - recordClass
+ * - recordModelAttributes
  */
 abstract class ForeignField extends Field
 {
@@ -295,7 +301,7 @@ abstract class ForeignField extends Field
 
   /**
    * @param mixed $value
-   * @return mixed
+   * @return array|null
    * @throws Exception
    */
   protected function prepareQueryFilter($value) {
@@ -304,13 +310,13 @@ abstract class ForeignField extends Field
     }
 
     if (!is_array($value)) {
-      throw new Exception("The query value for the field {$this->handle} must be an array.");
+      throw new Exception("The query value for the field $this->handle must be an array.");
     }
 
     $fields = static::recordModelAttributes();
     foreach ($value as $field => $condition) {
       if (!in_array($field, $fields)) {
-        throw new Exception("The query for the field {$this->handle} refers to an unknown field '{$field}'.");
+        throw new Exception("The query for the field $this->handle refers to an unknown field '$field'.");
       }
     }
 
@@ -397,13 +403,17 @@ abstract class ForeignField extends Field
   /**
    * @return string
    */
-  abstract public static function inputTemplate(): string;
+  public static function inputTemplate(): string {
+    return '';
+  }
 
   /**
    * The model class used to represent this field.
    * @return string
    */
-  abstract public static function modelClass(): string;
+  public static function modelClass(): string {
+    return ForeignFieldModel::class;
+  }
 
   /**
    * The query extension class used by this field.
@@ -417,13 +427,17 @@ abstract class ForeignField extends Field
    * The record class used to store this field.
    * @return string
    */
-  abstract public static function recordClass(): string;
+  public static function recordClass(): string {
+    return ForeignFieldRecord::class;
+  }
 
   /**
    * The list of record attributes that must be copied over to the model.
    * @return array
    */
-  abstract public static function recordModelAttributes(): array;
+  public static function recordModelAttributes(): array {
+    return [];
+  }
 
   /**
    * @return string|null
