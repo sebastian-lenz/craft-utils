@@ -3,12 +3,18 @@
   "description": "A collection of utility classes for Craft CMS development",
   "license": "MIT",
   "require": {
-    "php": ">=7.2.5",
-    "craftcms/cms": "^3.6.0"
+    "php": ">=7.2.5|^8.0",
+    "craftcms/cms": "^3.6.0|^4.0.0-beta"
   },
   "autoload": {
     "psr-4": {
       "lenz\\craft\\utils\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
     }
   }
 }

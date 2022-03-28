@@ -30,7 +30,7 @@ class ModelArrayValidator extends ArrayValidator
   /**
    * @inheritdoc
    */
-  public function init() {
+  public function init(): void {
     parent::init();
 
     if ($this->instance === null) {
@@ -45,7 +45,7 @@ class ModelArrayValidator extends ArrayValidator
   /**
    * @inheritDoc
    */
-  protected function validateValue($value) {
+  protected function validateValue($value): ?array {
     $result = parent::validate($value);
     if (!is_null($result)) {
       return $result;
