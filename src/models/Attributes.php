@@ -14,12 +14,12 @@ class Attributes extends Markup
   /**
    * @var string
    */
-  public $charset;
+  public string $charset;
 
   /**
    * @var array
    */
-  public $values;
+  public array $values;
 
 
   /**
@@ -37,7 +37,7 @@ class Attributes extends Markup
    * @param string $name
    * @return mixed
    */
-  public function __get(string $name) {
+  public function __get(string $name): mixed {
     return $this->get($name);
   }
 
@@ -51,9 +51,9 @@ class Attributes extends Markup
 
   /**
    * @param string $name
-   * @param $value
+   * @param mixed $value
    */
-  public function __set(string $name, $value) {
+  public function __set(string $name, mixed $value) {
     $this->set($name, $value);
   }
 
@@ -97,7 +97,7 @@ class Attributes extends Markup
   /**
    * @return false|int
    */
-  public function count() {
+  public function count(): false|int {
     return mb_strlen($this->__toString(), $this->charset);
   }
 
@@ -106,7 +106,7 @@ class Attributes extends Markup
    * @param mixed $defaultValue
    * @return mixed
    */
-  public function get(string $name, $defaultValue = null) {
+  public function get(string $name, mixed $defaultValue = null): mixed {
     return array_key_exists($name, $this->values)
       ? $this->values[$name]
       : $defaultValue;
@@ -114,7 +114,7 @@ class Attributes extends Markup
   }
 
   /**
-   * @return array
+   * @return string[]
    */
   public function getClasses(): array {
     $classNames = $this->get('class', []);
@@ -182,7 +182,7 @@ class Attributes extends Markup
    * @param mixed $value
    * @return $this
    */
-  public function set($nameOrValues, $value = null): Attributes {
+  public function set(string|array $nameOrValues, mixed $value = null): Attributes {
     if (is_string($nameOrValues)) {
       $this->values[$nameOrValues] = $value;
     } elseif (is_iterable($nameOrValues)) {
@@ -200,6 +200,7 @@ class Attributes extends Markup
    * @param string $className
    * @param bool|null $value
    * @return $this
+   * @noinspection PhpUnused (API)
    */
   public function toggleClass(string $className, ?bool $value = null): Attributes {
     if (is_null($value)) {

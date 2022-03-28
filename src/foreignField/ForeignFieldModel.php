@@ -6,6 +6,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\elements\MatrixBlock;
+use Exception;
 use lenz\craft\utils\helpers\ArrayHelper;
 use lenz\craft\utils\helpers\ElementHelpers;
 use Serializable;
@@ -19,17 +20,17 @@ abstract class ForeignFieldModel extends Model implements Serializable
   /**
    * @var ForeignField
    */
-  protected $_field;
+  protected ForeignField $_field;
 
   /**
    * @var ElementInterface|null
    */
-  protected $_owner;
+  protected ?ElementInterface $_owner;
 
   /**
    * @var ElementInterface|null|false
    */
-  protected $_root = false;
+  protected null|false|ElementInterface $_root = false;
 
 
   /**
@@ -49,7 +50,7 @@ abstract class ForeignFieldModel extends Model implements Serializable
   /**
    * @return array
    */
-  public function __debugInfo() {
+  public function __debugInfo(): array {
     return $this->attributes;
   }
 
@@ -58,21 +59,22 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @return string
    * @noinspection PhpMissingParamTypeInspection
    */
-  public function getAttributeLabel($attribute) {
+  public function getAttributeLabel($attribute): string {
     return $this->translate(parent::getAttributeLabel($attribute));
   }
 
   /**
    * @return ForeignField
    */
-  public function getField() {
+  public function getField(): ForeignField {
     return $this->_field;
   }
 
   /**
    * @return ElementInterface|null
+   * @noinspection PhpUnused (API)
    */
-  public function getOwner() {
+  public function getOwner(): ElementInterface|null {
     return $this->_owner;
   }
 
@@ -80,7 +82,7 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @return ElementInterface|null
    * @throws InvalidConfigException
    */
-  public function getRoot() {
+  public function getRoot(): ElementInterface|null {
     if ($this->_root === false) {
       $this->_root = is_null($this->_owner)
         ? null
@@ -93,21 +95,22 @@ abstract class ForeignFieldModel extends Model implements Serializable
   /**
    * @return bool
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     return false;
   }
 
   /**
    * @inheritDoc
    */
-  public function serialize() {
+  public function serialize(): string {
     return serialize($this->getSerializedData());
   }
 
   /**
    * @inheritDoc
+   * @throws Exception
    */
-  public function unserialize($data) {
+  public function unserialize(string $data) {
     $data = unserialize($data);
     $this->setSerializedData(is_array($data) ? $data : []);
   }
@@ -115,8 +118,9 @@ abstract class ForeignFieldModel extends Model implements Serializable
   /**
    * @param ElementInterface|null $owner
    * @return $this
+   * @noinspection PhpUnused (API)
    */
-  public function withOwner(ElementInterface $owner = null) {
+  public function withOwner(ElementInterface $owner = null): static {
     if ($this->_owner === $owner) {
       return $this;
     }
@@ -144,11 +148,16 @@ abstract class ForeignFieldModel extends Model implements Serializable
 
   /**
    * @param array $data
+   * @throws Exception
    */
   protected function setSerializedData(array $data) {
-    $this->_field = Craft::$app->getFields()->getFieldByHandle(
+    $field = Craft::$app->getFields()->getFieldByHandle(
       (string)ArrayHelper::get($data, '_field', '')
     );
+
+    if ($field instanceof ForeignField) {
+      $this->_field = $field;
+    }
 
     $this->_owner = ElementHelpers::unserialize(
       ArrayHelper::get($data, '_owner')
@@ -183,6 +192,7 @@ abstract class ForeignFieldModel extends Model implements Serializable
     }
 
     if (is_a($element, 'verbb\supertable\elements\SuperTableBlockElement')) {
+      /** @noinspection PhpPossiblePolymorphicInvocationInspection */
       return $this->getParentElement($element->getOwner());
     }
 

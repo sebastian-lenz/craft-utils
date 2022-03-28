@@ -71,7 +71,7 @@ abstract class ForeignField extends Field
    * @inheritDoc
    */
   public function getInputHtml($value, ?ElementInterface $element = null): string {
-    return $this->getHtml($value, $element, false);
+    return $this->getHtml($value, $element);
   }
 
   /**
@@ -124,8 +124,6 @@ abstract class ForeignField extends Field
     static::queryExtensionClass()::attachTo($query, $this, [
       'filters' => static::prepareQueryFilter($value),
     ]);
-
-    return;
   }
 
   /**
@@ -174,7 +172,7 @@ abstract class ForeignField extends Field
   /**
    * @inheritdoc
    */
-  public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed {
+  public function serializeValue(mixed $value, ?ElementInterface $element = null): string {
     return Json::encode($this->toRecordAttributes($value, $element));
   }
 
@@ -409,7 +407,7 @@ abstract class ForeignField extends Field
 
   /**
    * The model class used to represent this field.
-   * @return string
+   * @return class-string<ForeignFieldModel>
    */
   public static function modelClass(): string {
     return ForeignFieldModel::class;
@@ -417,7 +415,7 @@ abstract class ForeignField extends Field
 
   /**
    * The query extension class used by this field.
-   * @return string|ForeignFieldQueryExtension
+   * @return class-string<ForeignFieldQueryExtension>
    */
   public static function queryExtensionClass(): string {
     return ForeignFieldQueryExtension::class;
@@ -425,7 +423,7 @@ abstract class ForeignField extends Field
 
   /**
    * The record class used to store this field.
-   * @return string
+   * @return class-string<ForeignFieldRecord>
    */
   public static function recordClass(): string {
     return ForeignFieldRecord::class;

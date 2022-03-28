@@ -16,17 +16,17 @@ abstract class AbstractElementEvent extends Event
   /**
    * @var ElementInterface|null
    */
-  private $_element;
+  private ?ElementInterface $_element;
 
   /**
    * @var int
    */
-  private $_elementId;
+  private int $_elementId;
 
   /**
    * @var int|null
    */
-  private $_siteId;
+  private ?int $_siteId;
 
   /**
    * @var array
@@ -42,7 +42,7 @@ abstract class AbstractElementEvent extends Event
    * AbstractElementEvent constructor.
    * @param array $config
    */
-  public function __construct($config = []) {
+  public function __construct(array $config = []) {
     parent::__construct(
       $this->extractElementConfig($config)
     );
@@ -72,8 +72,7 @@ abstract class AbstractElementEvent extends Event
    * @return Site|null
    */
   public function getSite() {
-    $element = $this->getElement();
-    return $element ? $element->getSite() : null;
+    return $this->getElement()?->getSite();
   }
 
 
@@ -84,8 +83,8 @@ abstract class AbstractElementEvent extends Event
    * @param array $config
    * @return array
    */
-  private function extractElementConfig(array $config) {
-    $element = isset($config['element']) ? $config['element'] : null;
+  private function extractElementConfig(array $config): array {
+    $element = $config['element'] ?? null;
 
     if ($element instanceof ElementInterface) {
       $this->_element = $element;
@@ -94,7 +93,7 @@ abstract class AbstractElementEvent extends Event
     }
     elseif (isset($config['elementId'])) {
       $this->_elementId = $config['elementId'];
-      $this->_siteId = isset($config['siteId']) ? $config['siteId'] : null;
+      $this->_siteId = $config['siteId'] ?? null;
     }
     else {
       throw new InvalidArgumentException('Either `element` or `elementId` must be set.');

@@ -17,7 +17,7 @@ class ElementHelpers
    * @param ElementInterface|null $element
    * @return array|null
    */
-  static public function serialize(ElementInterface $element = null) {
+  static public function serialize(ElementInterface $element = null): ?array {
     if (is_null($element)) {
       return null;
     }
@@ -27,7 +27,7 @@ class ElementHelpers
       if (!empty($element->siteId)) {
         $siteId = intval($element->siteId);
       }
-    } catch (Throwable $error) {
+    } catch (Throwable) {
       // Ignore
     }
 
@@ -43,7 +43,7 @@ class ElementHelpers
    * @return ElementInterface|null
    * @throws Exception
    */
-  static public function unserialize($value) {
+  static public function unserialize(mixed $value): ?ElementInterface {
     $id = ArrayHelper::getValue($value, 'id');
     if (is_null($id)) {
       return null;

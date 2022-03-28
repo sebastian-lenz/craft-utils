@@ -1,8 +1,11 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace lenz\craft\utils\foreignField\traits;
 
 use craft\helpers\DateTimeHelper;
+use Exception;
 
 /**
  * Trait DateAttributes
@@ -26,8 +29,7 @@ trait DateAttributes
   abstract function dateAttributes();
 
   /**
-   * @inheritDoc
-   * @throws \Exception
+   * @throws Exception
    */
   protected function initDateAttributes() {
     foreach ($this->dateAttributes() as $attribute) {

@@ -12,17 +12,17 @@ class ForeignFieldModelValidator extends Validator
   /**
    * @var ForeignField
    */
-  public $field;
+  public ForeignField $field;
 
   /**
    * @var string
    */
-  public $msgInstanceOf = '{attribute} must be an instance of {modelClass}.';
+  public string $msgInstanceOf = '{attribute} must be an instance of {modelClass}.';
 
   /**
    * @var string
    */
-  public $msgErrors = '{attribute} contains errors.';
+  public string $msgErrors = '{attribute} contains errors.';
 
 
   /**
@@ -30,7 +30,7 @@ class ForeignFieldModelValidator extends Validator
    * @return array|null
    */
   protected function validateValue($value) {
-    $field      = $this->field;
+    $field = $this->field;
     $modelClass = $field::modelClass();
 
     if (!is_a($value, $modelClass)) {

@@ -43,7 +43,7 @@ abstract class ForeignFieldRecord extends ActiveRecord
   /**
    * @inheritDoc
    */
-  public function rules() {
+  public function rules(): array {
     return [
       [['elementId', 'fieldId', 'id', 'siteId'], 'integer'],
       [['elementId', 'fieldId', 'siteId'], 'required'],
@@ -82,11 +82,11 @@ abstract class ForeignFieldRecord extends ActiveRecord
     $migration->createTable($table, $columns);
 
     $migration->createIndex(null, $table, ['elementId', 'siteId', 'fieldId'], true);
-    $migration->createIndex(null, $table, ['fieldId'], false);
-    $migration->createIndex(null, $table, ['siteId'], false);
+    $migration->createIndex(null, $table, ['fieldId']);
+    $migration->createIndex(null, $table, ['siteId']);
 
-    $migration->addForeignKey(null, $table, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-    $migration->addForeignKey(null, $table, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
+    $migration->addForeignKey(null, $table, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE');
+    $migration->addForeignKey(null, $table, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE');
   }
 
   /**

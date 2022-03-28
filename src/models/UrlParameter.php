@@ -3,14 +3,14 @@
 namespace lenz\craft\utils\models;
 
 /**
- * Class Url
+ * Class UrlParameter
  */
 class UrlParameter
 {
   /**
    * @var string
    */
-  public $value;
+  public string $value;
 
 
   /**

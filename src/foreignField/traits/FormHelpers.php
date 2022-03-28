@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace lenz\craft\utils\foreignField\traits;
 
 use yii\base\Model;
@@ -15,20 +17,20 @@ trait FormHelpers
   /**
    * @return array
    */
-  abstract function attributeOptions();
+  abstract function attributeOptions(): array;
 
   /**
    * @param string $attribute
    * @return Validator[]
    * @see Model::getActiveValidators
    */
-  abstract function getActiveValidators($attribute = null);
+  abstract function getActiveValidators($attribute = null): array;
 
   /**
    * @param string $attribute
    * @return array
    */
-  public function getAttributeOptions($attribute) {
+  public function getAttributeOptions(string $attribute): array {
     $attributeOptions = $this->attributeOptions();
     $options = array_key_exists($attribute, $attributeOptions)
       ? $attributeOptions[$attribute]
@@ -44,8 +46,9 @@ trait FormHelpers
   /**
    * @param string $attribute
    * @return string
+   * @noinspection PhpUnused (API)
    */
-  public function getAttributeOptionLabel($attribute) {
+  public function getAttributeOptionLabel(string $attribute): string {
     $value = $this->$attribute;
     $attributeOptions = $this->attributeOptions();
     $options = array_key_exists($attribute, $attributeOptions)
@@ -61,7 +64,7 @@ trait FormHelpers
    * @param string $attribute
    * @return bool
    */
-  public function isAttributeRequired($attribute) {
+  public function isAttributeRequired(string $attribute): bool {
     $validators = $this->getActiveValidators($attribute);
 
     foreach ($validators as $validator) {
@@ -77,15 +80,16 @@ trait FormHelpers
    * @param string $name
    * @param array $options
    * @return string
+   * @noinspection PhpUnused (API)
    */
-  public function renderRedactorField(string $name, array $options) {
+  public function renderRedactorField(string $name, array $options): string {
     $redactorClass = 'craft\redactor\Field';
     if (!class_exists($redactorClass)) {
       return '<p>Editor not available</p>';
     }
 
     $redactor = new $redactorClass([
-      'handle'         => $name,
+      'handle' => $name,
       'redactorConfig' => 'Custom.json',
     ] + $options);
 
@@ -100,5 +104,5 @@ trait FormHelpers
    * @param string $message
    * @return string
    */
-  abstract protected function translate(string $message);
+  abstract protected function translate(string $message): string;
 }

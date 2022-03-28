@@ -14,17 +14,17 @@ class ModelArrayValidator extends ArrayValidator
   /**
    * @var string|null
    */
-  public $instance = null;
+  public ?string $instance = null;
 
   /**
    * @var string|null
    */
-  public $invalid = null;
+  public ?string $invalid = null;
 
   /**
    * @var string
    */
-  public $modelClass = Model::class;
+  public string $modelClass = Model::class;
 
 
   /**
@@ -46,7 +46,7 @@ class ModelArrayValidator extends ArrayValidator
    * @inheritDoc
    */
   protected function validateValue($value): ?array {
-    $result = parent::validate($value);
+    $result = parent::validateValue($value);
     if (!is_null($result)) {
       return $result;
     }

@@ -17,7 +17,7 @@ class ArrayHelper extends ArrayHelperBase
    * @param mixed $default
    * @return mixed
    */
-  static public function get($array, $key, $default = null) {
+  static public function get(mixed $array, mixed $key, mixed $default = null): mixed {
     try {
       return self::getValue($array, $key, $default);
     } catch (Throwable $error) {

@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace lenz\craft\utils\foreignField\listeners;
 
 use craft\events\RegisterTemplateRootsEvent;
@@ -14,7 +16,7 @@ class RegisterCpTemplates
   /**
    * @var bool
    */
-  private static $_isRegistered;
+  private static bool $_isRegistered;
 
 
   /**
@@ -35,7 +37,7 @@ class RegisterCpTemplates
   /**
    * @return string
    */
-  public static function getPath() {
+  public static function getPath(): string {
     return dirname(__DIR__) . '/templates';
   }
 

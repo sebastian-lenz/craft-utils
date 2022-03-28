@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace lenz\craft\utils\elementCache;
 
 use Craft;
@@ -13,6 +15,7 @@ use Throwable;
 use yii\base\Event;
 use yii\caching\FileCache;
 use yii\di\ServiceLocator;
+use yii\web\BadRequestHttpException;
 
 /**
  * Class ElementCache
@@ -25,12 +28,12 @@ class ElementCache extends ServiceLocator
   /**
    * @var bool
    */
-  private static $_shouldUseCache;
+  private static bool $_shouldUseCache;
 
   /**
    * @var ElementCache
    */
-  private static $_instance;
+  private static ElementCache $_instance;
 
 
   /**
@@ -60,9 +63,9 @@ class ElementCache extends ServiceLocator
   }
 
   /**
-   * @param Event $event
+   * @return void
    */
-  public function onElementChanged(Event $event) {
+  public function onElementChanged() {
     $this->cache->flush();
   }
 
@@ -101,8 +104,9 @@ class ElementCache extends ServiceLocator
 
   /**
    * @return bool
+   * @throws BadRequestHttpException
    */
-  static public function shouldUseCache() {
+  static public function shouldUseCache(): bool {
     if (!isset(self::$_shouldUseCache)) {
       $request = Craft::$app->getRequest();
       self::$_shouldUseCache = (
@@ -119,8 +123,9 @@ class ElementCache extends ServiceLocator
    * @param string $key
    * @param callable $callback
    * @return mixed
+   * @throws BadRequestHttpException
    */
-  static public function with(string $key, callable $callback) {
+  static public function with(string $key, callable $callback): mixed {
     if (!self::shouldUseCache()) {
       return $callback();
     }
@@ -133,8 +138,9 @@ class ElementCache extends ServiceLocator
    * @param ElementInterface $element
    * @param callable $callback
    * @return mixed
+   * @throws BadRequestHttpException
    */
-  static public function withElement(string $key, ElementInterface $element, callable $callback) {
+  static public function withElement(string $key, ElementInterface $element, callable $callback): mixed {
     $key .= ';element=' . $element->getId();
     if ($element instanceof Element) {
       $key .= ';siteId=' . $element->siteId;
@@ -147,8 +153,9 @@ class ElementCache extends ServiceLocator
    * @param string $key
    * @param callable $callback
    * @return mixed
+   * @throws BadRequestHttpException
    */
-  static public function withLanguage(string $key, callable $callback) {
+  static public function withLanguage(string $key, callable $callback): mixed {
     try {
       $site = Craft::$app->getSites()->getCurrentSite();
       $key .= ';language=' . $site->language;
@@ -163,8 +170,9 @@ class ElementCache extends ServiceLocator
    * @param string $key
    * @param callable $callback
    * @return mixed
+   * @throws BadRequestHttpException
    */
-  static public function withSite(string $key, callable $callback) {
+  static public function withSite(string $key, callable $callback): mixed {
     try {
       $site = Craft::$app->getSites()->getCurrentSite();
       $key .= ';site=' . $site->handle;

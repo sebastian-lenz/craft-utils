@@ -14,12 +14,12 @@ class ModelValidator extends Validator
   /**
    * @var string|null
    */
-  public $invalid = null;
+  public ?string $invalid = null;
 
   /**
    * @var string
    */
-  public $modelClass = Model::class;
+  public string $modelClass = Model::class;
 
 
   /**
@@ -40,7 +40,7 @@ class ModelValidator extends Validator
   /**
    * @inheritDoc
    */
-  protected function validateValue($value) {
+  protected function validateValue($value): ?array {
     if (!$value instanceof $this->modelClass) {
       return [$this->message, ['modelClass' => $this->modelClass]];
     }

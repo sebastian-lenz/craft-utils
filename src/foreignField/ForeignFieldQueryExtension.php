@@ -20,32 +20,32 @@ class ForeignFieldQueryExtension
   /**
    * @var bool
    */
-  public $enableEagerLoad;
+  public bool $enableEagerLoad;
 
   /**
    * @var bool
    */
-  public $enableJoin;
+  public bool $enableJoin;
 
   /**
    * @var ForeignField
    */
-  public $field;
+  public ForeignField $field;
 
   /**
    * @var array|null
    */
-  public $filters;
+  public ?array $filters;
 
   /**
    * @var ElementQuery
    */
-  public $query;
+  public ElementQuery $query;
 
   /**
    * @var ForeignFieldQueryExtension[]
    */
-  private static $INSTANCES = array();
+  private static array $INSTANCES = array();
 
 
   /**
@@ -90,7 +90,7 @@ class ForeignFieldQueryExtension
    * @param array $options
    * @return ForeignFieldQueryExtension
    */
-  protected function applyOptions(array $options) {
+  protected function applyOptions(array $options): static {
     $this->enableEagerLoad = $this->enableEagerLoad || $options['enableEagerLoad'];
     $this->enableJoin = $this->enableJoin || $options['enableJoin'];
 
@@ -148,7 +148,7 @@ class ForeignFieldQueryExtension
   /**
    * @return string
    */
-  protected function getJsonExpression() {
+  protected function getJsonExpression(): string {
     $attributes  = $this->field::recordModelAttributes();
     $handle      = $this->field->handle;
     $fields      = [];
@@ -163,7 +163,7 @@ class ForeignFieldQueryExtension
       ? 'json_object'
       : 'json_build_object';
 
-    return "IF([[$handle.id]] IS NULL, NULL, {$jsonFunction}({$fieldsList}))";
+    return "IF([[$handle.id]] IS NULL, NULL, $jsonFunction($fieldsList))";
   }
 
 
@@ -176,26 +176,27 @@ class ForeignFieldQueryExtension
    * @param array $options
    * @return ForeignFieldQueryExtension|void|null
    * @throws Exception
+   * @noinspection PhpUnused (API)
    */
   static public function attachTo(ElementQueryInterface $query, ForeignField $field, array $options = []) {
     if (!($query instanceof ElementQuery)) {
       return;
     }
 
-    $filters         = ArrayHelper::getValue($options, 'filters', null);
-    $forceEagerLoad  = !!ArrayHelper::getValue($options, 'forceEagerLoad', false);
-    $forceJoin       = !!ArrayHelper::getValue($options, 'forceJoin', false);
+    $filters = ArrayHelper::getValue($options, 'filters');
+    $forceEagerLoad = !!ArrayHelper::getValue($options, 'forceEagerLoad', false);
+    $forceJoin = !!ArrayHelper::getValue($options, 'forceJoin', false);
 
     $enableEagerLoad = static::enableEagerLoad($query, $field) || $forceEagerLoad;
-    $enableJoin      = static::enableJoin($query, $field) || $filters || $forceJoin;
+    $enableJoin = static::enableJoin($query, $field) || $filters || $forceJoin;
 
     if ($enableEagerLoad || $enableJoin) {
       $options = [
         'enableEagerLoad' => $enableEagerLoad,
-        'enableJoin'      => $enableJoin,
-        'field'           => $field,
-        'filters'         => $filters,
-        'query'           => $query,
+        'enableJoin' => $enableJoin,
+        'field' => $field,
+        'filters' => $filters,
+        'query' => $query,
       ];
 
       foreach (self::$INSTANCES as $instance) {
@@ -252,15 +253,15 @@ class ForeignFieldQueryExtension
    */
   static protected function enableJoin(ElementQuery $query, ForeignField $field) {
     $items = array_merge(
-      is_array($query->orderBy) ? $query->orderBy : [(string)$query->orderBy],
-      is_array($query->groupBy) ? $query->groupBy : [(string)$query->groupBy],
+      is_array($query->orderBy) ? $query->orderBy : [$query->orderBy],
+      is_array($query->groupBy) ? $query->groupBy : [$query->groupBy],
       [Json::encode($query->where)]
     );
 
     foreach ($items as $key => $value) {
       if (
-        strpos($key, $field->handle) !== false ||
-        strpos($value, $field->handle) !== false
+        str_contains($key, $field->handle) ||
+        str_contains($value, $field->handle)
       ) {
         return true;
       }

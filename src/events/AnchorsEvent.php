@@ -13,7 +13,7 @@ class AnchorsEvent extends AbstractElementEvent
   /**
    * @var array
    */
-  private $_anchors = [];
+  private array $_anchors = [];
 
   /**
    * @var string
@@ -25,6 +25,7 @@ class AnchorsEvent extends AbstractElementEvent
    * @param string $anchor  The anchor as it appears in the doucment (the id or fragment)
    * @param string|null $title  A human readable label for the anchor
    * @param string|null $id  A unique id that identifies this anchor
+   * @noinspection PhpUnused (API)
    */
   public function addAnchor(string $anchor, string $title = null, string $id = null) {
     if (!is_null($id) && !AnchorEvent::isAnchorId($id)) {
@@ -41,7 +42,7 @@ class AnchorsEvent extends AbstractElementEvent
   /**
    * @return array
    */
-  public function getAnchors() {
+  public function getAnchors(): array {
     return $this->_anchors;
   }
 
@@ -66,6 +67,7 @@ class AnchorsEvent extends AbstractElementEvent
    * @param string|int $elementId
    * @param string|int|null $siteId
    * @return array
+   * @noinspection PhpUnused (API)
    */
   static public function findAnchorsById($elementId, $siteId = null): array {
     $event = new AnchorsEvent([

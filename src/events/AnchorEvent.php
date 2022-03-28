@@ -13,12 +13,12 @@ class AnchorEvent extends AbstractElementEvent
   /**
    * @var string|null
    */
-  public $anchor = null;
+  public ?string $anchor = null;
 
   /**
    * @var string
    */
-  public $id;
+  public string $id;
 
   /**
    * @var string
@@ -39,13 +39,14 @@ class AnchorEvent extends AbstractElementEvent
    * @return bool
    */
   static public function isAnchorId(string $value): bool {
-    return substr($value, 0, strlen(self::ID_PREFIX)) == self::ID_PREFIX;
+    return str_starts_with($value, self::ID_PREFIX);
   }
 
   /**
    * @param string $anchor
    * @param ElementInterface $element
    * @return string|null
+   * @noinspection PhpUnused (API method)
    */
   static public function resolveAnchor(string $anchor, ElementInterface $element): ?string {
     if (!self::isAnchorId($anchor)) {

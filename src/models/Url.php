@@ -12,42 +12,42 @@ class Url extends Model
   /**
    * @var string|null
    */
-  public $fragment = null;
+  public ?string $fragment = null;
 
   /**
    * @var string|null
    */
-  public $host = null;
+  public ?string $host = null;
 
   /**
    * @var string|null
    */
-  public $pass = null;
+  public ?string $pass = null;
 
   /**
    * @var string|null
    */
-  public $path = null;
+  public ?string $path = null;
 
   /**
    * @var string|null
    */
-  public $port = null;
+  public ?string $port = null;
 
   /**
    * @var string|null
    */
-  public $query = null;
+  public ?string $query = null;
 
   /**
    * @var string|null
    */
-  public $scheme = null;
+  public ?string $scheme = null;
 
   /**
    * @var string|null
    */
-  public $user = null;
+  public ?string $user = null;
 
   /**
    * @var array
@@ -83,7 +83,7 @@ class Url extends Model
   /**
    * @return string
    */
-  public function __toString() {
+  public function __toString(): string {
     $result = [];
     $glues = $this->isMailTo() ? self::MAILTO_GLUES : self::DEFAULT_GLUES;
     $parts = $this->attributes + [
@@ -107,7 +107,7 @@ class Url extends Model
   /**
    * @return string
    */
-  public function getAuthentication() {
+  public function getAuthentication(): string {
     return implode(':', array_filter([
       empty($this->user) ? '' : $this->user,
       empty($this->pass) ? '' : $this->pass,
@@ -117,14 +117,14 @@ class Url extends Model
   /**
    * @return string|null
    */
-  public function getFragment() {
+  public function getFragment(): ?string {
     return empty($this->fragment) ? null : (string)$this->fragment;
   }
 
   /**
    * @return array
    */
-  public function getQuery() {
+  public function getQuery(): array {
     if (empty($this->query)) {
       return [];
     }
@@ -164,8 +164,9 @@ class Url extends Model
   /**
    * @param string|null $fragment
    * @return $this
+   * @noinspection PhpUnused (API)
    */
-  public function setFragment(string $fragment = null) {
+  public function setFragment(string $fragment = null): static {
     if (empty($fragment)) {
       $this->fragment = null;
     } else {
