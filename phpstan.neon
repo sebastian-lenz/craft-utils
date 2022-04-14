@@ -1,0 +1,12 @@
+parameters:
+  bootstrapFiles:
+    - vendor/yiisoft/yii2/Yii.php
+    - vendor/craftcms/cms/src/Craft.php
+  paths:
+    - src
+  level: 5
+  ignoreErrors:
+    - '#Call to an undefined method yii\\base\\Application.*#'
+    - '#Call to an undefined method yii\\base\\View.*#'
+    - '#Call to an undefined method yii\\console\\Request.*#'
+    - '#Call to an undefined method yii\\db\\Connection.*#'

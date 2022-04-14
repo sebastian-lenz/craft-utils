@@ -22,7 +22,7 @@ class RegisterCpTemplates
   /**
    * @return void
    */
-  public static function register() {
+  public static function register(): void {
     if (!self::$_isRegistered) {
       self::$_isRegistered = true;
 
@@ -44,7 +44,7 @@ class RegisterCpTemplates
   /**
    * @param RegisterTemplateRootsEvent $event
    */
-  public static function onRegisterCpTemplates(RegisterTemplateRootsEvent $event) {
+  public static function onRegisterCpTemplates(RegisterTemplateRootsEvent $event): void {
     $event->roots['foreign-field'] = self::getPath();
   }
 }

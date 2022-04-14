@@ -57,7 +57,6 @@ abstract class ForeignFieldModel extends Model implements Serializable
   /**
    * @param string $attribute
    * @return string
-   * @noinspection PhpMissingParamTypeInspection
    */
   public function getAttributeLabel($attribute): string {
     return $this->translate(parent::getAttributeLabel($attribute));
@@ -173,7 +172,7 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @param string $message
    * @return string
    */
-  protected function translate(string $message) {
+  protected function translate(string $message): string {
     return $this->_field::t($message);
   }
 
@@ -186,7 +185,7 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @return ElementInterface
    * @throws InvalidConfigException
    */
-  private function getParentElement(ElementInterface $element) {
+  private function getParentElement(ElementInterface $element): ElementInterface {
     if ($element instanceof MatrixBlock) {
       return $this->getParentElement($element->getOwner());
     }

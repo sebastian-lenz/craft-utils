@@ -64,14 +64,14 @@ abstract class AbstractElementEvent extends Event
   /**
    * @return int
    */
-  public function getElementId() {
+  public function getElementId(): int {
     return $this->_elementId;
   }
 
   /**
    * @return Site|null
    */
-  public function getSite() {
+  public function getSite(): ?Site {
     return $this->getElement()?->getSite();
   }
 

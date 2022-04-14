@@ -26,15 +26,15 @@ trait DateAttributes
   /**
    * @return array
    */
-  abstract function dateAttributes();
+  abstract function dateAttributes(): array;
 
   /**
    * @throws Exception
    */
-  protected function initDateAttributes() {
+  protected function initDateAttributes(): void {
     foreach ($this->dateAttributes() as $attribute) {
       if ($this->$attribute !== null) {
-        // Remove the timezone from form form submissions
+        // Remove the timezone from form submissions
         $value = $this->$attribute;
         if (is_array($value)) {
           unset($value['timezone']);

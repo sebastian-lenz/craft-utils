@@ -20,7 +20,7 @@ class ArrayHelper extends ArrayHelperBase
   static public function get(mixed $array, mixed $key, mixed $default = null): mixed {
     try {
       return self::getValue($array, $key, $default);
-    } catch (Throwable $error) {
+    } catch (Throwable) {
       return $default;
     }
   }

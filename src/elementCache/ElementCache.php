@@ -65,14 +65,14 @@ class ElementCache extends ServiceLocator
   /**
    * @return void
    */
-  public function onElementChanged() {
+  public function onElementChanged(): void {
     $this->cache->flush();
   }
 
   /**
    * @param RegisterCacheOptionsEvent $event
    */
-  public function onRegisterCacheOptions(RegisterCacheOptionsEvent $event) {
+  public function onRegisterCacheOptions(RegisterCacheOptionsEvent $event): void {
     $event->options[] = [
       'key'    => 'elements',
       'label'  => 'Elements',
@@ -87,14 +87,14 @@ class ElementCache extends ServiceLocator
   /**
    * @return FileCache
    */
-  static function getCache() {
+  static function getCache(): FileCache {
     return self::getInstance()->cache;
   }
 
   /**
    * @return ElementCache
    */
-  public static function getInstance() {
+  public static function getInstance(): ElementCache {
     if (!isset(self::$_instance)) {
       self::$_instance = new ElementCache();
     }

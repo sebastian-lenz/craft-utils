@@ -72,11 +72,11 @@ class Attributes extends Markup
   }
 
   /**
-   * @param string|array $nameOrValues
-   * @param mixed $value
+   * @param array|string $nameOrValues
+   * @param mixed|null $value
    * @return Attributes
    */
-  public function add($nameOrValues, $value = null): Attributes {
+  public function add(array|string $nameOrValues, mixed $value = null): Attributes {
     return $this->set($nameOrValues, $value);
   }
 
@@ -95,9 +95,9 @@ class Attributes extends Markup
   }
 
   /**
-   * @return false|int
+   * @return int
    */
-  public function count(): false|int {
+  public function count(): int {
     return mb_strlen($this->__toString(), $this->charset);
   }
 

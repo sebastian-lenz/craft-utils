@@ -20,11 +20,11 @@ trait FormHelpers
   abstract function attributeOptions(): array;
 
   /**
-   * @param string $attribute
+   * @param string|null $attribute
    * @return Validator[]
    * @see Model::getActiveValidators
    */
-  abstract function getActiveValidators($attribute = null): array;
+  abstract function getActiveValidators(string $attribute = null): array;
 
   /**
    * @param string $attribute

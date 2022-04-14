@@ -6,7 +6,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\db\ActiveRecord;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Json;
 use Exception;
@@ -21,6 +20,9 @@ use yii\behaviors\AttributeTypecastBehavior;
  * - modelClass
  * - recordClass
  * - recordModelAttributes
+ *
+ * @template TModel of ForeignFieldModel
+ * @template TRecord of ForeignFieldRecord
  */
 abstract class ForeignField extends Field
 {
@@ -102,7 +104,7 @@ abstract class ForeignField extends Field
    * @return bool
    * @noinspection PhpUnusedParameterInspection
    */
-  public function isAttributePropagated(string $attribute) {
+  public function isAttributePropagated(string $attribute): bool {
     return true;
   }
 
@@ -137,10 +139,12 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @inheritDoc
+   * @param mixed $value
+   * @param ElementInterface|null $element
+   * @return TModel
    * @throws Exception
    */
-  public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed {
+  public function normalizeValue(mixed $value, ?ElementInterface $element = null): ForeignFieldModel {
     $modelClass = static::modelClass();
     if (is_a($value, $modelClass)) {
       return $value;
@@ -181,11 +185,11 @@ abstract class ForeignField extends Field
   // -----------------
 
   /**
-   * @param ActiveRecord $record
+   * @param TRecord $record
    * @param array $attributes
    * @param ElementInterface $element
    */
-  protected function applyRecordAttributes(ActiveRecord $record, array $attributes, ElementInterface $element) {
+  protected function applyRecordAttributes(ForeignFieldRecord $record, array $attributes, ElementInterface $element): void {
     $isPropagating =
       $element instanceof Element &&
       $element->propagating &&
@@ -204,23 +208,21 @@ abstract class ForeignField extends Field
   /**
    * @param array $attributes
    * @param ElementInterface|null $element
-   * @return ForeignFieldModel
+   * @return TModel
    */
-  protected function createModel(array $attributes = [], ElementInterface $element = null) {
+  protected function createModel(array $attributes = [], ElementInterface $element = null): ForeignFieldModel {
     $modelClass = static::modelClass();
     return new $modelClass($this, $element, $attributes);
   }
 
   /**
    * @param ElementInterface $element
-   * @return ActiveRecord
+   * @return TRecord
    * @throws Exception
    */
-  protected function findOrCreateRecord(ElementInterface $element) {
+  protected function findOrCreateRecord(ElementInterface $element): ForeignFieldRecord {
     $record = $this->findRecord($element);
-
     if (is_null($record)) {
-      /** @var ActiveRecord $recordClass */
       $recordClass = static::recordClass();
       $conditions = $this->getRecordConditions($element);
       $record = new $recordClass($conditions);
@@ -231,11 +233,10 @@ abstract class ForeignField extends Field
 
   /**
    * @param ElementInterface|null $element
-   * @return ActiveRecord|null
+   * @return TRecord|null
    * @throws Exception
    */
-  protected function findRecord(ElementInterface $element = null) {
-    /** @var ActiveRecord $recordClass */
+  protected function findRecord(ElementInterface $element = null): ?ForeignFieldRecord {
     $recordClass = static::recordClass();
     $conditions = $this->getRecordConditions($element);
 
@@ -249,7 +250,7 @@ abstract class ForeignField extends Field
    * @return array|null
    * @throws Exception
    */
-  protected function getRecordConditions(ElementInterface $element = null) {
+  protected function getRecordConditions(ElementInterface $element = null): ?array {
     if (is_null($element)) {
       return null;
     }
@@ -271,12 +272,12 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ForeignFieldModel $value
+   * @param TModel $value
    * @param ElementInterface|null $element
    * @param bool $disabled
    * @return string
    */
-  protected function getHtml(ForeignFieldModel $value, ElementInterface $element = null, $disabled = false) {
+  protected function getHtml(ForeignFieldModel $value, ElementInterface $element = null, bool $disabled = false): string {
     /**
      * Craft 3.5 introduces a strange behaviour that calls the render function
      * on another instance of the field than the field has been created with.
@@ -302,7 +303,7 @@ abstract class ForeignField extends Field
    * @return array|null
    * @throws Exception
    */
-  protected function prepareQueryFilter($value) {
+  protected function prepareQueryFilter(mixed $value): ?array {
     if (empty($value)) {
       return null;
     }
@@ -326,7 +327,7 @@ abstract class ForeignField extends Field
    * @param array $variables
    * @return string
    */
-  protected function render(string $template, array $variables) {
+  protected function render(string $template, array $variables): string {
     try {
       return Craft::$app->getView()->renderTemplate($template, $variables);
     } catch (Throwable $error) {
@@ -343,12 +344,12 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ForeignFieldModel $model
+   * @param TModel $model
    * @param ElementInterface $element
    * @return bool
    * @noinspection PhpUnusedParameterInspection
    */
-  protected function shouldUpdateRecord(ForeignFieldModel $model, ElementInterface $element) {
+  protected function shouldUpdateRecord(ForeignFieldModel $model, ElementInterface $element): bool {
     if (
       !static::hasPerSiteRecords() &&
       $element instanceof Element &&
@@ -361,22 +362,22 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ActiveRecord $record
+   * @param TRecord $record
    * @param ElementInterface|null $element
    * @return array
    * @noinspection PhpUnusedParameterInspection
    */
-  protected function toModelAttributes(ActiveRecord $record, ElementInterface $element = null) {
+  protected function toModelAttributes(ForeignFieldRecord $record, ElementInterface $element = null): array {
     return $record->getAttributes(static::recordModelAttributes());
   }
 
   /**
-   * @param ForeignFieldModel $model
+   * @param TModel $model
    * @param ElementInterface $element
    * @return array
    * @noinspection PhpUnusedParameterInspection
    */
-  protected function toRecordAttributes(ForeignFieldModel $model, ElementInterface $element) {
+  protected function toRecordAttributes(ForeignFieldModel $model, ElementInterface $element): array {
     return $model->getAttributes(static::recordModelAttributes());
   }
 
@@ -407,7 +408,7 @@ abstract class ForeignField extends Field
 
   /**
    * The model class used to represent this field.
-   * @return class-string<ForeignFieldModel>
+   * @return class-string<TModel>
    */
   public static function modelClass(): string {
     return ForeignFieldModel::class;
@@ -423,7 +424,7 @@ abstract class ForeignField extends Field
 
   /**
    * The record class used to store this field.
-   * @return class-string<ForeignFieldRecord>
+   * @return class-string<TRecord>
    */
   public static function recordClass(): string {
     return ForeignFieldRecord::class;
@@ -440,7 +441,7 @@ abstract class ForeignField extends Field
   /**
    * @return string|null
    */
-  public static function settingsTemplate() {
+  public static function settingsTemplate(): ?string {
     return null;
   }
 

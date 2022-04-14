@@ -52,7 +52,7 @@ class ForeignFieldQueryExtension
    * ForeignFieldQueryExtension constructor.
    * @param array $config
    */
-  public function __construct(array $config) {
+  public final function __construct(array $config) {
     self::$INSTANCES[] = $this;
     Yii::configure($this, $config);
 
@@ -88,7 +88,7 @@ class ForeignFieldQueryExtension
 
   /**
    * @param array $options
-   * @return ForeignFieldQueryExtension
+   * @return $this
    */
   protected function applyOptions(array $options): static {
     $this->enableEagerLoad = $this->enableEagerLoad || $options['enableEagerLoad'];
@@ -215,7 +215,7 @@ class ForeignFieldQueryExtension
    * @param ElementQuery $query
    * @return bool
    */
-  static public function isCountQuery(ElementQuery $query) {
+  static public function isCountQuery(ElementQuery $query): bool {
     return (
       count($query->select) == 1 &&
       reset($query->select) == 'COUNT(*)'
@@ -231,7 +231,7 @@ class ForeignFieldQueryExtension
    * @param ForeignField $field
    * @return bool
    */
-  static protected function enableEagerLoad(ElementQuery $query, ForeignField $field) {
+  static protected function enableEagerLoad(ElementQuery $query, ForeignField $field): bool {
     $handle = $field->handle;
     if ($query->with == $handle) {
       $query->with = null;
@@ -251,10 +251,10 @@ class ForeignFieldQueryExtension
    * @param ForeignField $field
    * @return bool
    */
-  static protected function enableJoin(ElementQuery $query, ForeignField $field) {
+  static protected function enableJoin(ElementQuery $query, ForeignField $field): bool {
     $items = array_merge(
       is_array($query->orderBy) ? $query->orderBy : [$query->orderBy],
-      is_array($query->groupBy) ? $query->groupBy : [$query->groupBy],
+      $query->groupBy,
       [Json::encode($query->where)]
     );
 

@@ -29,7 +29,7 @@ class ForeignFieldModelValidator extends Validator
    * @param mixed $value
    * @return array|null
    */
-  protected function validateValue($value) {
+  protected function validateValue(mixed $value): ?array {
     $field = $this->field;
     $modelClass = $field::modelClass();
 
