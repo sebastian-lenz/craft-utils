@@ -254,7 +254,7 @@ class ForeignFieldQueryExtension
   static protected function enableJoin(ElementQuery $query, ForeignField $field): bool {
     $items = array_merge(
       is_array($query->orderBy) ? $query->orderBy : [$query->orderBy],
-      $query->groupBy,
+      is_array($query->groupBy) ? $query->groupBy : [$query->groupBy],
       [Json::encode($query->where)]
     );
 
