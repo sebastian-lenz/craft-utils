@@ -1,7 +1,6 @@
+includes:
+  - vendor/craftcms/phpstan/phpstan.neon
 parameters:
-  bootstrapFiles:
-    - vendor/yiisoft/yii2/Yii.php
-    - vendor/craftcms/cms/src/Craft.php
   paths:
     - src
   level: 5
