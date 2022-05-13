@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace lenz\craft\utils\foreignField\listeners;
 
 use craft\events\RegisterTemplateRootsEvent;
@@ -10,21 +8,22 @@ use yii\base\Event;
 
 /**
  * Class RegisterCpTemplates
+ * @noinspection PhpUnused
  */
 class RegisterCpTemplates
 {
   /**
    * @var bool
    */
-  private static bool $_isRegistered;
+  private static bool $_IS_REGISTERED = false;
 
 
   /**
    * @return void
    */
   public static function register(): void {
-    if (!self::$_isRegistered) {
-      self::$_isRegistered = true;
+    if (!self::$_IS_REGISTERED) {
+      self::$_IS_REGISTERED = true;
 
       Event::on(
         View::class,
