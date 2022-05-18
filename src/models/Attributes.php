@@ -211,4 +211,22 @@ class Attributes extends Markup
       ? $this->addClass($className)
       : $this->removeClass($className);
   }
+
+
+  // Static methods
+  // --------------
+
+  /**
+   * @param mixed $value
+   * @return Attributes
+   */
+  static public function create(mixed $value = []): Attributes {
+    if ($value instanceof Attributes) {
+      return $value;
+    } elseif (is_array($value)) {
+      return new Attributes($value);
+    }
+
+    return new Attributes();
+  }
 }
