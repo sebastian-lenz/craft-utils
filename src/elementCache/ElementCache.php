@@ -120,12 +120,11 @@ class ElementCache extends ServiceLocator
   }
 
   /**
-   * @param string $key
+   * @param string|array $key
    * @param callable $callback
    * @return mixed
-   * @throws BadRequestHttpException
    */
-  static public function with(string $key, callable $callback): mixed {
+  static public function with(string|array $key, callable $callback): mixed {
     if (!self::shouldUseCache()) {
       return $callback();
     }
@@ -134,50 +133,50 @@ class ElementCache extends ServiceLocator
   }
 
   /**
-   * @param string $key
+   * @param string|array $key
    * @param ElementInterface $element
    * @param callable $callback
    * @return mixed
-   * @throws BadRequestHttpException
    */
-  static public function withElement(string $key, ElementInterface $element, callable $callback): mixed {
-    $key .= ';element=' . $element->getId();
+  static public function withElement(string|array $key, ElementInterface $element, callable $callback): mixed {
+    $key = is_string($key) ? [$key] : $key;
+    $key[] = 'element=' . $element->getId();
     if ($element instanceof Element) {
-      $key .= ';siteId=' . $element->siteId;
+      $key[] = 'siteId=' . $element->siteId;
     }
 
     return self::with($key, $callback);
   }
 
   /**
-   * @param string $key
+   * @param string|array $key
    * @param callable $callback
    * @return mixed
-   * @throws BadRequestHttpException
    */
-  static public function withLanguage(string $key, callable $callback): mixed {
+  static public function withLanguage(string|array $key, callable $callback): mixed {
     try {
       $site = Craft::$app->getSites()->getCurrentSite();
-      $key .= ';language=' . $site->language;
-    } catch (Throwable $error) {
-      Craft::error($error->getMessage());
+      $key = is_string($key) ? [$key] : $key;
+      $key[] = 'language=' . $site->language;
+    } catch (Throwable) {
+      return $callback();
     }
 
     return self::with($key, $callback);
   }
 
   /**
-   * @param string $key
+   * @param string|array $key
    * @param callable $callback
    * @return mixed
-   * @throws BadRequestHttpException
    */
-  static public function withSite(string $key, callable $callback): mixed {
+  static public function withSite(string|array $key, callable $callback): mixed {
     try {
       $site = Craft::$app->getSites()->getCurrentSite();
-      $key .= ';site=' . $site->handle;
-    } catch (Throwable $error) {
-      Craft::error($error->getMessage());
+      $key = is_string($key) ? [$key] : $key;
+      $key[] = 'site=' . $site->handle;
+    } catch (Throwable) {
+      return $callback();
     }
 
     return self::with($key, $callback);
