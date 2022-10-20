@@ -146,12 +146,13 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @param array $data
    */
   protected function setSerializedData(array $data) {
-    $this->_field = Craft::$app->getFields()->getFieldByHandle(
-      (string)ArrayHelper::get($data, '_field', '')
-    );
-
     $this->_owner = ElementHelpers::unserialize(
       ArrayHelper::get($data, '_owner')
+    );
+    
+    $this->_field = Craft::$app->getFields()->getFieldByHandle(
+      (string)ArrayHelper::get($data, '_field', ''),
+      $this->_owner->getFieldContext() ?? null
     );
 
     $attributes = ArrayHelper::get($data, '_attributes');
