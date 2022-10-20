@@ -150,16 +150,13 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @throws Exception
    */
   protected function setSerializedData(array $data) {
-    $field = Craft::$app->getFields()->getFieldByHandle(
-      (string)ArrayHelper::get($data, '_field', '')
-    );
-
-    if ($field instanceof ForeignField) {
-      $this->_field = $field;
-    }
-
     $this->_owner = ElementHelpers::unserialize(
       ArrayHelper::get($data, '_owner')
+    );
+
+    $this->_field = Craft::$app->getFields()->getFieldByHandle(
+      (string)ArrayHelper::get($data, '_field', ''),
+      $this->_owner->getFieldContext() ?? null
     );
 
     $attributes = ArrayHelper::get($data, '_attributes');
