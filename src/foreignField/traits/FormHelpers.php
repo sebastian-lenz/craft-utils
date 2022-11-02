@@ -20,13 +20,6 @@ trait FormHelpers
   abstract function attributeOptions(): array;
 
   /**
-   * @param string|null $attribute
-   * @return Validator[]
-   * @see Model::getActiveValidators
-   */
-  abstract function getActiveValidators(string $attribute = null): array;
-
-  /**
    * @param string $attribute
    * @return array
    */
@@ -58,22 +51,6 @@ trait FormHelpers
     return array_key_exists($value, $options)
       ? $this->translate($options[$value])
       : $value;
-  }
-
-  /**
-   * @param string $attribute
-   * @return bool
-   */
-  public function isAttributeRequired(string $attribute): bool {
-    $validators = $this->getActiveValidators($attribute);
-
-    foreach ($validators as $validator) {
-      if ($validator instanceof RequiredValidator) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   /**
