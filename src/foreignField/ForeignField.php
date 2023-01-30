@@ -53,11 +53,13 @@ abstract class ForeignField extends Field
    * @inheritDoc
    */
   public function behaviors(): array {
-    return [
-      'typecast' => [
-        'class' => AttributeTypecastBehavior::class,
-      ],
+    $behaviors = parent::behaviors();
+    
+    $behaviors['typecast'] = [
+      'class' => AttributeTypecastBehavior::class,
     ];
+    
+    return $behaviors;
   }
 
   /**
