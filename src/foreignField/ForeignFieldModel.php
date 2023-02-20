@@ -9,13 +9,12 @@ use craft\elements\MatrixBlock;
 use Exception;
 use lenz\craft\utils\helpers\ArrayHelper;
 use lenz\craft\utils\helpers\ElementHelpers;
-use Serializable;
 use yii\base\InvalidConfigException;
 
 /**
  * Class ForeignModel
  */
-abstract class ForeignFieldModel extends Model implements Serializable
+abstract class ForeignFieldModel extends Model
 {
   /**
    * @var ForeignField
@@ -99,22 +98,6 @@ abstract class ForeignFieldModel extends Model implements Serializable
   }
 
   /**
-   * @inheritDoc
-   */
-  public function serialize(): string {
-    return serialize($this->getSerializedData());
-  }
-
-  /**
-   * @inheritDoc
-   * @throws Exception
-   */
-  public function unserialize(string $data) {
-    $data = unserialize($data);
-    $this->setSerializedData(is_array($data) ? $data : []);
-  }
-
-  /**
    * @param ElementInterface|null $owner
    * @return $this
    * @noinspection PhpUnused (API)
@@ -130,14 +113,10 @@ abstract class ForeignFieldModel extends Model implements Serializable
     return $model;
   }
 
-
-  // Protected methods
-  // -----------------
-
   /**
    * @return array
    */
-  protected function getSerializedData() : array {
+  public function __serialize() : array {
     return [
       '_attributes' => $this->attributes,
       '_field' => $this->_field->handle,
@@ -149,11 +128,12 @@ abstract class ForeignFieldModel extends Model implements Serializable
    * @param array $data
    * @throws Exception
    */
-  protected function setSerializedData(array $data) {
+  public function __unserialize(array $data): void {
     $this->_owner = ElementHelpers::unserialize(
       ArrayHelper::get($data, '_owner')
     );
 
+    /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
     $this->_field = Craft::$app->getFields()->getFieldByHandle(
       (string)ArrayHelper::get($data, '_field', ''),
       $this->_owner->getFieldContext() ?? null
@@ -164,6 +144,10 @@ abstract class ForeignFieldModel extends Model implements Serializable
       $this->setAttributes($attributes, false);
     }
   }
+
+
+  // Protected methods
+  // -----------------
 
   /**
    * @param string $message
