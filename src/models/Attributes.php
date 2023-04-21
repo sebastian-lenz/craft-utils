@@ -12,11 +12,6 @@ use Twig\Markup;
 class Attributes extends Markup
 {
   /**
-   * @var string
-   */
-  public string $charset;
-
-  /**
    * @var array
    */
   public array $values;
@@ -29,7 +24,6 @@ class Attributes extends Markup
   public function __construct(array $values = [], string $charset = 'utf-8') {
     parent::__construct('', $charset);
 
-    $this->$charset = $charset;
     $this->values = $values;
   }
 
