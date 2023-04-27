@@ -12,6 +12,22 @@ use Throwable;
 class ArrayHelper extends ArrayHelperBase
 {
   /**
+   * @param iterable $array
+   * @param callable $callback
+   * @return mixed
+   */
+  static public function firstResult(iterable $array, callable $callback): mixed {
+    foreach ($array as $index => $value) {
+      $result = $callback($value, $index);
+      if (!is_null($result)) {
+        return $result;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * @param object|array $array
    * @param string|Closure|array $key
    * @param mixed $default
