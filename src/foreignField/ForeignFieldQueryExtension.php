@@ -252,17 +252,19 @@ class ForeignFieldQueryExtension
    * @return bool
    */
   static protected function enableJoin(ElementQuery $query, ForeignField $field): bool {
-    $items = array_merge(
+    $values = array_merge(
       is_array($query->orderBy) ? $query->orderBy : [$query->orderBy],
       is_array($query->groupBy) ? $query->groupBy : [$query->groupBy],
       [Json::encode($query->where)]
     );
 
-    foreach ($items as $key => $value) {
-      if (
-        str_contains($key, $field->handle) ||
-        str_contains($value, $field->handle)
-      ) {
+    $values = array_filter(
+      array_merge(array_values($values), array_keys($values)),
+      fn($value) => is_string($value) && !empty($value)
+    );
+
+    foreach ($values as $value) {
+      if (str_contains($value, $field->handle)) {
         return true;
       }
     }
