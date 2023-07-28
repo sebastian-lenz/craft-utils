@@ -19,10 +19,9 @@ class Attributes extends Markup
 
   /**
    * @param array $values
-   * @param string $charset
    */
-  public function __construct(array $values = [], string $charset = 'utf-8') {
-    parent::__construct('', $charset);
+  public function __construct(array $values = []) {
+    parent::__construct('', 'utf-8');
 
     $this->values = $values;
   }
@@ -75,16 +74,20 @@ class Attributes extends Markup
   }
 
   /**
-   * @param string $className
+   * @param array|string|null $classNames
    * @return $this
    */
-  public function addClass(string $className): Attributes {
-    $classNames = $this->getClasses();
-    if (!in_array($className, $classNames)) {
-      $classNames[] = $className;
-      $this->set('class', $classNames);
+  public function addClass(array|string|null $classNames): Attributes {
+    $classNames = self::splitClassNames($classNames);
+    $existing = $this->getClasses();
+
+    foreach ($classNames as $className) {
+      if (!in_array($className, $existing)) {
+        $existing[] = $className;
+      }
     }
 
+    $this->set('class', $existing);
     return $this;
   }
 
@@ -92,7 +95,7 @@ class Attributes extends Markup
    * @return int
    */
   public function count(): int {
-    return mb_strlen($this->__toString(), $this->charset);
+    return mb_strlen($this->__toString(), 'utf-8');
   }
 
   /**
@@ -136,7 +139,7 @@ class Attributes extends Markup
    * @return bool
    */
   public function hasClass(string $className): bool {
-    $classNames = $this->get('class', []);
+    $classNames = $this->getClasses();
     return in_array($className, $classNames);
   }
 
@@ -157,17 +160,21 @@ class Attributes extends Markup
   }
 
   /**
-   * @param string $className
+   * @param array|string|null $classNames
    * @return $this
    */
-  public function removeClass(string $className): Attributes {
-    $classNames = $this->getClasses();
-    $key = array_search($className, $classNames);
-    if ($key !== false) {
-      unset($classNames[$key]);
-      $this->set('class', $classNames);
+  public function removeClass(array|string|null $classNames): Attributes {
+    $classNames = self::splitClassNames($classNames);
+    $existing = $this->getClasses();
+
+    foreach ($classNames as $className) {
+      $key = array_search($className, $existing);
+      if ($key !== false) {
+        unset($existing[$key]);
+      }
     }
 
+    $this->set('class', array_values($existing));
     return $this;
   }
 
@@ -222,5 +229,19 @@ class Attributes extends Markup
     }
 
     return new Attributes();
+  }
+
+  /**
+   * @param array|string|null $classNames
+   * @return array
+   */
+  static private function splitClassNames(array|string|null $classNames): array {
+    if (empty($classNames)) {
+      return [];
+    }
+
+    return array_values(array_filter(array_map('trim',
+      is_string($classNames) ? explode(' ', $classNames) : $classNames
+    )));
   }
 }
