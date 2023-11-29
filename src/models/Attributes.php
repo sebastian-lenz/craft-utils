@@ -119,11 +119,7 @@ class Attributes extends Markup
       $classNames = explode(' ', $classNames);
     }
 
-    return array_unique(
-      array_filter(
-        array_map('trim', $classNames)
-      )
-    );
+    return self::splitClassNames($classNames);
   }
 
   /**
@@ -240,8 +236,8 @@ class Attributes extends Markup
       return [];
     }
 
-    return array_values(array_filter(array_map('trim',
+    return array_values(array_unique(array_filter(array_map('trim',
       is_string($classNames) ? explode(' ', $classNames) : $classNames
-    )));
+    ))));
   }
 }
