@@ -84,7 +84,7 @@ abstract class ForeignFieldModel extends Model
     if ($this->_root === false) {
       $this->_root = is_null($this->_owner)
         ? null
-        : $this->getParentElement($this->_owner);
+        : self::toParentElement($this->_owner);
     }
 
     return $this->_root;
@@ -166,16 +166,44 @@ abstract class ForeignFieldModel extends Model
    * @return ElementInterface
    * @throws InvalidConfigException
    */
-  private function getParentElement(ElementInterface $element): ElementInterface {
+  private static function toParentElement(ElementInterface $element): ElementInterface {
     if ($element instanceof MatrixBlock) {
-      return $this->getParentElement($element->getOwner());
+      return self::toParentElement(self::toMatrixParentElement($element));
     }
 
     if (is_a($element, 'verbb\supertable\elements\SuperTableBlockElement')) {
       /** @noinspection PhpPossiblePolymorphicInvocationInspection */
-      return $this->getParentElement($element->getOwner());
+      return self::toParentElement($element->getOwner());
     }
 
     return $element;
+  }
+
+  /**
+   * @param MatrixBlock $element
+   * @return ElementInterface
+   * @throws Exception
+   */
+  private static function toMatrixParentElement(MatrixBlock $element): ElementInterface {
+    try {
+      $owner = $element->getOwner();
+      if ($owner->id == $element->primaryOwnerId) {
+        return $owner;
+      }
+    } catch (\Throwable) {
+      // If the owner is trashed, we'll get an exception here. Ignore it and try fetching the element.
+    }
+
+    $sites = [$element->siteId, '*'];
+    $elements = Craft::$app->getElements();
+
+    while (count($sites)) {
+      $owner = $elements->getElementById($element->primaryOwnerId, null, array_shift($sites), ['trashed' => null]);
+      if ($owner) {
+        return $owner;
+      }
+    }
+
+    throw new Exception("Invalid parent id $element->primaryOwnerId for matrix block with id $element->id in site $element->siteId.");
   }
 }
