@@ -4,10 +4,6 @@
 
 namespace lenz\craft\utils\foreignField\traits;
 
-use yii\base\Model;
-use yii\validators\RequiredValidator;
-use yii\validators\Validator;
-
 /**
  * Trait FormHelpers
  * Helpers required by the form template provided by this module.

@@ -54,11 +54,11 @@ abstract class ForeignField extends Field
    */
   public function behaviors(): array {
     $behaviors = parent::behaviors();
-    
+
     $behaviors['typecast'] = [
       'class' => AttributeTypecastBehavior::class,
     ];
-    
+
     return $behaviors;
   }
 
@@ -388,13 +388,6 @@ abstract class ForeignField extends Field
   // --------------
 
   /**
-   * @inheritDoc
-   */
-  public static function hasContentColumn(): bool {
-    return false;
-  }
-
-  /**
    * @return bool
    */
   public static function hasPerSiteRecords(): bool {
@@ -475,7 +468,7 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @inheritdoc
+   * @return string
    */
   public static function valueType(): string {
     return static::modelClass();

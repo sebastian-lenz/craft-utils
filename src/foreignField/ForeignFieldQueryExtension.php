@@ -65,7 +65,7 @@ class ForeignFieldQueryExtension
   /**
    * @return void
    */
-  public function onAfterPrepare() {
+  public function onAfterPrepare(): void {
     $enableEagerLoad = (
       $this->enableEagerLoad && (
         !empty($this->filters) ||
@@ -106,7 +106,7 @@ class ForeignFieldQueryExtension
   /**
    * @return void
    */
-  protected function attachEagerLoad() {
+  protected function attachEagerLoad(): void {
     $this->query->query->addSelect([
       'field:' . $this->field->handle => $this->getJsonExpression(),
     ]);
@@ -115,7 +115,7 @@ class ForeignFieldQueryExtension
   /**
    * @return void
    */
-  protected function attachJoin() {
+  protected function attachJoin(): void {
     /** @var ActiveRecord $recordClass */
     $recordClass = $this->field::recordClass();
     $tableName   = $recordClass::tableName();

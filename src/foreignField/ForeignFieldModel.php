@@ -5,11 +5,9 @@ namespace lenz\craft\utils\foreignField;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Model;
-use craft\elements\MatrixBlock;
 use Exception;
 use lenz\craft\utils\helpers\ArrayHelper;
 use lenz\craft\utils\helpers\ElementHelpers;
-use yii\base\InvalidConfigException;
 
 /**
  * Class ForeignModel
@@ -78,7 +76,7 @@ abstract class ForeignFieldModel extends Model
 
   /**
    * @return ElementInterface|null
-   * @throws InvalidConfigException
+   * @noinspection PhpUnused Public API
    */
   public function getRoot(): ElementInterface|null {
     if ($this->_root === false) {
@@ -164,46 +162,19 @@ abstract class ForeignFieldModel extends Model
   /**
    * @param ElementInterface $element
    * @return ElementInterface
-   * @throws InvalidConfigException
    */
   private static function toParentElement(ElementInterface $element): ElementInterface {
-    if ($element instanceof MatrixBlock) {
-      return self::toParentElement(self::toMatrixParentElement($element));
-    }
+    $index = 0;
+    do {
+      $parent = $element->getParent();
 
-    if (is_a($element, 'verbb\supertable\elements\SuperTableBlockElement')) {
-      /** @noinspection PhpPossiblePolymorphicInvocationInspection */
-      return self::toParentElement($element->getOwner());
-    }
+      if (is_null($parent)) {
+        return $element;
+      } else {
+        $element = $parent;
+      }
+    } while (++$index < 50);
 
     return $element;
-  }
-
-  /**
-   * @param MatrixBlock $element
-   * @return ElementInterface
-   * @throws Exception
-   */
-  private static function toMatrixParentElement(MatrixBlock $element): ElementInterface {
-    try {
-      $owner = $element->getOwner();
-      if ($owner->id == $element->primaryOwnerId) {
-        return $owner;
-      }
-    } catch (\Throwable) {
-      // If the owner is trashed, we'll get an exception here. Ignore it and try fetching the element.
-    }
-
-    $sites = [$element->siteId, '*'];
-    $elements = Craft::$app->getElements();
-
-    while (count($sites)) {
-      $owner = $elements->getElementById($element->primaryOwnerId, null, array_shift($sites), ['trashed' => null]);
-      if ($owner) {
-        return $owner;
-      }
-    }
-
-    throw new Exception("Invalid parent id $element->primaryOwnerId for matrix block with id $element->id in site $element->siteId.");
   }
 }

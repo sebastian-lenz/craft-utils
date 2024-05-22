@@ -58,7 +58,7 @@ abstract class ForeignFieldRecord extends ActiveRecord
    * @param Migration $migration
    * @param array $columns
    */
-  public static function createTable(Migration $migration, array $columns) {
+  public static function createTable(Migration $migration, array $columns): void {
     $table = static::tableName();
     if ($migration->db->tableExists($table)) {
       return;
@@ -92,7 +92,7 @@ abstract class ForeignFieldRecord extends ActiveRecord
   /**
    * @param Migration $migration
    */
-  public static function dropTable(Migration $migration) {
+  public static function dropTable(Migration $migration): void {
     $table = static::tableName();
     if ($migration->db->tableExists($table)) {
       $migration->dropTable($table);
