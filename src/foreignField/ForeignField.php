@@ -65,6 +65,13 @@ abstract class ForeignField extends Field
   /**
    * @inheritDoc
    */
+  public static function dbType(): array|string|null {
+    return null;
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function getElementValidationRules(): array {
     return [
       [ForeignFieldModelValidator::class, 'field' => $this]
