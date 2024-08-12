@@ -11,6 +11,7 @@ use craft\helpers\Json;
 use Exception;
 use Throwable;
 use yii\behaviors\AttributeTypecastBehavior;
+use yii\db\ExpressionInterface;
 
 /**
  * Class ForeignField
@@ -21,11 +22,19 @@ use yii\behaviors\AttributeTypecastBehavior;
  * - recordClass
  * - recordModelAttributes
  *
- * @template TModel of ForeignFieldModel
- * @template TRecord of ForeignFieldRecord
+ * @phpstan-template TModel of ForeignFieldModel
+ * @phpstan-template TRecord of ForeignFieldRecord
  */
 abstract class ForeignField extends Field
 {
+  /**
+   * @inheritDoc
+   */
+  public function init(): void {
+    parent::init();
+    ForeignFieldQueryExtension::init();
+  }
+
   /**
    * @inheritDoc
    * @throws Exception
@@ -109,8 +118,8 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param string $attribute
-   * @return bool
+   * @phpstan-param string $attribute
+   * @phpstan-return bool
    * @noinspection PhpUnusedParameterInspection
    */
   public function isAttributePropagated(string $attribute): bool {
@@ -131,16 +140,6 @@ abstract class ForeignField extends Field
    * @inheritDoc
    * @throws Exception
    */
-  public function modifyElementsQuery(ElementQueryInterface $query, $value): void {
-    static::queryExtensionClass()::attachTo($query, $this, [
-      'filters' => static::prepareQueryFilter($value),
-    ]);
-  }
-
-  /**
-   * @inheritDoc
-   * @throws Exception
-   */
   public function modifyElementIndexQuery(ElementQueryInterface $query): void {
     static::queryExtensionClass()::attachTo($query, $this, [
       'forceEagerLoad' => true,
@@ -148,9 +147,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param mixed $value
-   * @param ElementInterface|null $element
-   * @return TModel
+   * @phpstan-param mixed $value
+   * @phpstan-param ElementInterface|null $element
+   * @phpstan-return TModel
    * @throws Exception
    */
   public function normalizeValue(mixed $value, ?ElementInterface $element = null): ForeignFieldModel {
@@ -194,9 +193,9 @@ abstract class ForeignField extends Field
   // -----------------
 
   /**
-   * @param TRecord $record
-   * @param array $attributes
-   * @param ElementInterface $element
+   * @phpstan-param TRecord $record
+   * @phpstan-param array $attributes
+   * @phpstan-param ElementInterface $element
    */
   protected function applyRecordAttributes(ForeignFieldRecord $record, array $attributes, ElementInterface $element): void {
     $isPropagating =
@@ -215,9 +214,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param array $attributes
-   * @param ElementInterface|null $element
-   * @return TModel
+   * @phpstan-param array $attributes
+   * @phpstan-param ElementInterface|null $element
+   * @phpstan-return TModel
    */
   protected function createModel(array $attributes = [], ElementInterface $element = null): ForeignFieldModel {
     $modelClass = static::modelClass();
@@ -225,8 +224,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ElementInterface $element
-   * @return TRecord
+   * @phpstan-param ElementInterface $element
+   * @phpstan-return TRecord
+   * @phpstan-throws Exception
    * @throws Exception
    */
   protected function findOrCreateRecord(ElementInterface $element): ForeignFieldRecord {
@@ -241,8 +241,8 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ElementInterface|null $element
-   * @return TRecord|null
+   * @phpstan-param ElementInterface|null $element
+   * @phpstan-return TRecord|null
    * @throws Exception
    */
   protected function findRecord(ElementInterface $element = null): ?ForeignFieldRecord {
@@ -255,8 +255,8 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param ElementInterface|null $element
-   * @return array|null
+   * @phpstan-param ElementInterface|null $element
+   * @phpstan-return array|null
    * @throws Exception
    */
   protected function getRecordConditions(ElementInterface $element = null): ?array {
@@ -281,10 +281,10 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param TModel $value
-   * @param ElementInterface|null $element
-   * @param bool $disabled
-   * @return string
+   * @phpstan-param TModel $value
+   * @phpstan-param ElementInterface|null $element
+   * @phpstan-param bool $disabled
+   * @phpstan-return string
    */
   protected function getHtml(ForeignFieldModel $value, ElementInterface $element = null, bool $disabled = false): string {
     /**
@@ -308,33 +308,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param mixed $value
-   * @return array|null
-   * @throws Exception
-   */
-  protected function prepareQueryFilter(mixed $value): ?array {
-    if (empty($value)) {
-      return null;
-    }
-
-    if (!is_array($value)) {
-      throw new Exception("The query value for the field $this->handle must be an array.");
-    }
-
-    $fields = static::recordModelAttributes();
-    foreach ($value as $field => $condition) {
-      if (!in_array($field, $fields)) {
-        throw new Exception("The query for the field $this->handle refers to an unknown field '$field'.");
-      }
-    }
-
-    return $value;
-  }
-
-  /**
-   * @param string $template
-   * @param array $variables
-   * @return string
+   * @phpstan-param string $template
+   * @phpstan-param array $variables
+   * @phpstan-return string
    */
   protected function render(string $template, array $variables): string {
     try {
@@ -353,9 +329,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param TModel $model
-   * @param ElementInterface $element
-   * @return bool
+   * @phpstan-param TModel $model
+   * @phpstan-param ElementInterface $element
+   * @phpstan-return bool
    * @noinspection PhpUnusedParameterInspection
    */
   protected function shouldUpdateRecord(ForeignFieldModel $model, ElementInterface $element): bool {
@@ -371,9 +347,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param TRecord $record
-   * @param ElementInterface|null $element
-   * @return array
+   * @phpstan-param TRecord $record
+   * @phpstan-param ElementInterface|null $element
+   * @phpstan-return array
    * @noinspection PhpUnusedParameterInspection
    */
   protected function toModelAttributes(ForeignFieldRecord $record, ElementInterface $element = null): array {
@@ -381,9 +357,9 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param TModel $model
-   * @param ElementInterface $element
-   * @return array
+   * @phpstan-param TModel $model
+   * @phpstan-param ElementInterface $element
+   * @phpstan-return array
    * @noinspection PhpUnusedParameterInspection
    */
   protected function toRecordAttributes(ForeignFieldModel $model, ElementInterface $element): array {
@@ -395,14 +371,14 @@ abstract class ForeignField extends Field
   // --------------
 
   /**
-   * @return bool
+   * @phpstan-return bool
    */
   public static function hasPerSiteRecords(): bool {
     return true;
   }
 
   /**
-   * @return string
+   * @phpstan-return string
    */
   public static function inputTemplate(): string {
     return '';
@@ -410,7 +386,7 @@ abstract class ForeignField extends Field
 
   /**
    * The model class used to represent this field.
-   * @return class-string<TModel>
+   * @phpstan-return class-string<TModel>
    */
   public static function modelClass(): string {
     return ForeignFieldModel::class;
@@ -418,7 +394,7 @@ abstract class ForeignField extends Field
 
   /**
    * The query extension class used by this field.
-   * @return class-string<ForeignFieldQueryExtension>
+   * @phpstan-return class-string<ForeignFieldQueryExtension>
    */
   public static function queryExtensionClass(): string {
     return ForeignFieldQueryExtension::class;
@@ -426,7 +402,7 @@ abstract class ForeignField extends Field
 
   /**
    * The record class used to store this field.
-   * @return class-string<TRecord>
+   * @phpstan-return class-string<TRecord>
    */
   public static function recordClass(): string {
     return ForeignFieldRecord::class;
@@ -434,21 +410,32 @@ abstract class ForeignField extends Field
 
   /**
    * The list of record attributes that must be copied over to the model.
-   * @return array
+   * @phpstan-return array
    */
   public static function recordModelAttributes(): array {
     return [];
   }
 
   /**
-   * @return string|null
+   * @inheritDoc
+   */
+  public static function queryCondition(
+    array $instances,
+    mixed $value,
+    array &$params,
+  ): array|string|ExpressionInterface|false|null {
+    return null;
+  }
+
+  /**
+   * @phpstan-return string|null
    */
   public static function settingsTemplate(): ?string {
     return null;
   }
 
   /**
-   * @return array
+   * @phpstan-return array
    */
   public static function supportedTranslationMethods(): array {
     if (!static::hasPerSiteRecords()) {
@@ -467,15 +454,15 @@ abstract class ForeignField extends Field
   }
 
   /**
-   * @param string $message
-   * @return string
+   * @phpstan-param string $message
+   * @phpstan-return string
    */
   public static function t(string $message): string {
     return Craft::t('site', $message);
   }
 
   /**
-   * @return string
+   * @phpstan-return string
    */
   public static function valueType(): string {
     return static::modelClass();

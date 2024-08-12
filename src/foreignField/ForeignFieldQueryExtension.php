@@ -6,11 +6,13 @@ use Craft;
 use craft\db\ActiveRecord;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\CancelableEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use Exception;
 use Yii;
+use yii\base\Event;
 
 /**
  * Class ForeignFieldQueryExtension
@@ -18,39 +20,39 @@ use Yii;
 class ForeignFieldQueryExtension
 {
   /**
-   * @var bool
+   * @phpstan-var bool
    */
   public bool $enableEagerLoad;
 
   /**
-   * @var bool
+   * @phpstan-var bool
    */
   public bool $enableJoin;
 
   /**
-   * @var ForeignField
+   * @phpstan-var ForeignField
    */
   public ForeignField $field;
 
   /**
-   * @var array|null
+   * @phpstan-var array|null
    */
   public ?array $filters;
 
   /**
-   * @var ElementQuery
+   * @phpstan-var ElementQuery
    */
   public ElementQuery $query;
 
   /**
-   * @var ForeignFieldQueryExtension[]
+   * @phpstan-var ForeignFieldQueryExtension[]
    */
   private static array $INSTANCES = array();
 
 
   /**
    * ForeignFieldQueryExtension constructor.
-   * @param array $config
+   * @phpstan-param array $config
    */
   public final function __construct(array $config) {
     self::$INSTANCES[] = $this;
@@ -63,7 +65,7 @@ class ForeignFieldQueryExtension
   }
 
   /**
-   * @return void
+   * @phpstan-return void
    */
   public function onAfterPrepare(): void {
     $enableEagerLoad = (
@@ -87,8 +89,8 @@ class ForeignFieldQueryExtension
   // -----------------
 
   /**
-   * @param array $options
-   * @return $this
+   * @phpstan-param array $options
+   * @phpstan-return $this
    */
   protected function applyOptions(array $options): static {
     $this->enableEagerLoad = $this->enableEagerLoad || $options['enableEagerLoad'];
@@ -104,7 +106,7 @@ class ForeignFieldQueryExtension
   }
 
   /**
-   * @return void
+   * @phpstan-return void
    */
   protected function attachEagerLoad(): void {
     $this->query->query->addSelect([
@@ -113,7 +115,7 @@ class ForeignFieldQueryExtension
   }
 
   /**
-   * @return void
+   * @phpstan-return void
    */
   protected function attachJoin(): void {
     /** @var ActiveRecord $recordClass */
@@ -146,7 +148,7 @@ class ForeignFieldQueryExtension
   }
 
   /**
-   * @return string
+   * @phpstan-return string
    */
   protected function getJsonExpression(): string {
     $attributes  = $this->field::recordModelAttributes();
@@ -171,10 +173,10 @@ class ForeignFieldQueryExtension
   // ---------------------
 
   /**
-   * @param ElementQueryInterface $query
-   * @param ForeignField $field
-   * @param array $options
-   * @return ForeignFieldQueryExtension|void|null
+   * @phpstan-param ElementQueryInterface $query
+   * @phpstan-param ForeignField $field
+   * @phpstan-param array $options
+   * @phpstan-return ForeignFieldQueryExtension|void|null
    * @throws Exception
    * @noinspection PhpUnused (API)
    */
@@ -212,8 +214,8 @@ class ForeignFieldQueryExtension
   }
 
   /**
-   * @param ElementQuery $query
-   * @return bool
+   * @phpstan-param ElementQuery $query
+   * @phpstan-return bool
    */
   static public function isCountQuery(ElementQuery $query): bool {
     return (
@@ -227,9 +229,9 @@ class ForeignFieldQueryExtension
   // ------------------------
 
   /**
-   * @param ElementQuery $query
-   * @param ForeignField $field
-   * @return bool
+   * @phpstan-param ElementQuery $query
+   * @phpstan-param ForeignField $field
+   * @phpstan-return bool
    */
   static protected function enableEagerLoad(ElementQuery $query, ForeignField $field): bool {
     $handle = $field->handle;
@@ -247,9 +249,9 @@ class ForeignFieldQueryExtension
   }
 
   /**
-   * @param ElementQuery $query
-   * @param ForeignField $field
-   * @return bool
+   * @phpstan-param ElementQuery $query
+   * @phpstan-param ForeignField $field
+   * @phpstan-return bool
    */
   static protected function enableJoin(ElementQuery $query, ForeignField $field): bool {
     $values = array_merge(
@@ -270,5 +272,64 @@ class ForeignFieldQueryExtension
     }
 
     return false;
+  }
+
+  /**
+   * @phpstan-return void
+   */
+  static public function init(): void {
+    static $isInitialized;
+    if (isset($isInitialized)) return;
+    $isInitialized = true;
+
+    Event::on(ElementQuery::class, ElementQuery::EVENT_BEFORE_PREPARE, function(CancelableEvent $event) {
+      $query = $event->sender;
+      if (!($query instanceof ElementQuery) || !$query->withCustomFields) {
+        return;
+      }
+
+      $fieldAttributes = $query->getBehavior('customFields');
+      $fieldLayouts = Craft::$app->getFields()->getLayoutsByType($query->elementType);
+      $fields = array_filter(array_unique(array_reduce($fieldLayouts,
+        fn($fields, $fieldLayout) => array_merge($fields, $fieldLayout->getCustomFields()),
+      [])),
+        fn($field) => $field instanceof ForeignField
+      );
+
+      foreach ($fields as $field) {
+        $queryClass = $field::queryExtensionClass();
+        $handle = $field->handle;
+        $filter = $fieldAttributes->$handle ?? null;
+
+        $queryClass::attachTo($query, $field, [
+          'filters' => $queryClass::prepareQueryFilter($field, $filter),
+        ]);
+      }
+    });
+  }
+
+  /**
+   * @phpstan-param ForeignField $field
+   * @phpstan-param mixed $value
+   * @phpstan-return array|null
+   * @throws Exception
+   */
+  static function prepareQueryFilter(ForeignField $field, mixed $value): ?array {
+    if (empty($value)) {
+      return null;
+    }
+
+    if (!is_array($value)) {
+      throw new Exception("The query value for the field $field->handle must be an array.");
+    }
+
+    $attributes = $field::recordModelAttributes();
+    foreach ($value as $attribute => $condition) {
+      if (!in_array($attribute, $attributes)) {
+        throw new Exception("The query for the field $field->handle refers to an unknown field '$attribute'.");
+      }
+    }
+
+    return $value;
   }
 }
