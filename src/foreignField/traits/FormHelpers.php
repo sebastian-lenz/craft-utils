@@ -66,7 +66,7 @@ trait FormHelpers
       'redactorConfig' => 'Custom.json',
     ] + $options);
 
-    return $redactor->getInputHtml($this->$name);
+    return $redactor->getInputHtml($this->$name, null);
   }
 
 
