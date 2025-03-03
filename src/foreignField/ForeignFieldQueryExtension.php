@@ -9,10 +9,11 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\CancelableEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\Json;
 use Exception;
 use Yii;
 use yii\base\Event;
+use yii\db\Expression;
+use yii\db\ExpressionInterface;
 
 /**
  * Class ForeignFieldQueryExtension
@@ -257,7 +258,7 @@ class ForeignFieldQueryExtension
     $values = array_merge(
       is_array($query->orderBy) ? $query->orderBy : [$query->orderBy],
       is_array($query->groupBy) ? $query->groupBy : [$query->groupBy],
-      [Json::encode($query->where)]
+      self::findFieldsInWhere($query->where),
     );
 
     $values = array_filter(
@@ -273,6 +274,26 @@ class ForeignFieldQueryExtension
 
     return false;
   }
+
+  /**
+   * @param array|string|ExpressionInterface|null $value
+   * @return array|string[]
+   */
+  static protected function findFieldsInWhere(array|null|string|ExpressionInterface $value): array {
+    if ($value instanceof Expression) {
+      return [$value->expression];
+    } elseif (is_string($value)) {
+      return [$value];
+    } elseif (is_array($value)) {
+      return array_map(self::findFieldsInWhere(...), $value);
+    } else {
+      return [];
+    }
+  }
+
+
+  // Static methods
+  // --------------
 
   /**
    * @phpstan-return void
@@ -292,7 +313,7 @@ class ForeignFieldQueryExtension
       $fieldLayouts = Craft::$app->getFields()->getLayoutsByType($query->elementType);
       $fields = array_filter(array_unique(array_reduce($fieldLayouts,
         fn($fields, $fieldLayout) => array_merge($fields, $fieldLayout->getCustomFields()),
-      [])),
+        [])),
         fn($field) => $field instanceof ForeignField
       );
 
@@ -307,6 +328,7 @@ class ForeignFieldQueryExtension
       }
     });
   }
+
 
   /**
    * @phpstan-param ForeignField $field
