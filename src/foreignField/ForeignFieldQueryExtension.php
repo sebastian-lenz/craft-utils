@@ -203,7 +203,7 @@ class ForeignFieldQueryExtension
       ];
 
       foreach (self::$INSTANCES as $instance) {
-        if ($instance->query === $query) {
+        if ($instance->query === $query && $instance->field === $field) {
           return $instance->applyOptions($options);
         }
       }
