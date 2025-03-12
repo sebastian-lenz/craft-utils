@@ -80,9 +80,7 @@ abstract class ForeignFieldModel extends Model
    */
   public function getRoot(): ElementInterface|null {
     if ($this->_root === false) {
-      $this->_root = is_null($this->_owner)
-        ? null
-        : self::toParentElement($this->_owner);
+      $this->_root = $this->_owner?->getRootOwner();
     }
 
     return $this->_root;
@@ -153,28 +151,5 @@ abstract class ForeignFieldModel extends Model
    */
   protected function translate(string $message): string {
     return $this->_field::t($message);
-  }
-
-
-  // Private methods
-  // ---------------
-
-  /**
-   * @param ElementInterface $element
-   * @return ElementInterface
-   */
-  private static function toParentElement(ElementInterface $element): ElementInterface {
-    $index = 0;
-    do {
-      $parent = $element->getParent();
-
-      if (is_null($parent)) {
-        return $element;
-      } else {
-        $element = $parent;
-      }
-    } while (++$index < 50);
-
-    return $element;
   }
 }
