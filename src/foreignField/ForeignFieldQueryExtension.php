@@ -255,7 +255,7 @@ class ForeignFieldQueryExtension
     $values = array_merge(
       is_array($query->orderBy) ? $query->orderBy : [$query->orderBy],
       is_array($query->groupBy) ? $query->groupBy : [$query->groupBy],
-      [Json::encode($query->where)]
+      [json_encode($query->where)]
     );
 
     $values = array_filter(
