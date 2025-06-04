@@ -262,7 +262,10 @@ class ForeignFieldQueryExtension
     );
 
     $values = array_filter(
-      array_merge(array_values($values), array_keys($values)),
+      array_map(
+        fn($value) => $value instanceof Expression ? $value->expression : $value,
+        array_merge(array_values($values), array_keys($values))
+      ),
       fn($value) => is_string($value) && !empty($value)
     );
 
