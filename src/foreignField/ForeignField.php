@@ -32,7 +32,7 @@ abstract class ForeignField extends Field
    */
   public function init(): void {
     parent::init();
-    ForeignFieldQueryExtension::init();
+    ForeignFieldQueryListener::init();
   }
 
   /**

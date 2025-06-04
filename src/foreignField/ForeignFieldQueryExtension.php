@@ -48,7 +48,7 @@ class ForeignFieldQueryExtension
   /**
    * @phpstan-var ForeignFieldQueryExtension[]
    */
-  private static array $INSTANCES = array();
+  private static array $INSTANCES = [];
 
 
   /**
@@ -203,7 +203,7 @@ class ForeignFieldQueryExtension
       ];
 
       foreach (self::$INSTANCES as $instance) {
-        if ($instance->query === $query && $instance->field === $field) {
+        if ($instance->query === $query && $instance->field->handle === $field->handle) {
           return $instance->applyOptions($options);
         }
       }
@@ -297,41 +297,6 @@ class ForeignFieldQueryExtension
 
   // Static methods
   // --------------
-
-  /**
-   * @phpstan-return void
-   */
-  static public function init(): void {
-    static $isInitialized;
-    if (isset($isInitialized)) return;
-    $isInitialized = true;
-
-    Event::on(ElementQuery::class, ElementQuery::EVENT_BEFORE_PREPARE, function(CancelableEvent $event) {
-      $query = $event->sender;
-      if (!($query instanceof ElementQuery) || !$query->withCustomFields) {
-        return;
-      }
-
-      $fieldAttributes = $query->getBehavior('customFields');
-      $fieldLayouts = Craft::$app->getFields()->getLayoutsByType($query->elementType);
-      $fields = array_filter(array_unique(array_reduce($fieldLayouts,
-        fn($fields, $fieldLayout) => array_merge($fields, $fieldLayout->getCustomFields()),
-        [])),
-        fn($field) => $field instanceof ForeignField
-      );
-
-      foreach ($fields as $field) {
-        $queryClass = $field::queryExtensionClass();
-        $handle = $field->handle;
-        $filter = $fieldAttributes->$handle ?? null;
-
-        $queryClass::attachTo($query, $field, [
-          'filters' => $queryClass::prepareQueryFilter($field, $filter),
-        ]);
-      }
-    });
-  }
-
 
   /**
    * @phpstan-param ForeignField $field
