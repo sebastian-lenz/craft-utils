@@ -393,6 +393,13 @@ abstract class ForeignField extends Field
   }
 
   /**
+   * @inheritDoc
+   */
+  public static function phpType(): string {
+    return static::modelClass();
+  }
+
+  /**
    * The query extension class used by this field.
    * @phpstan-return class-string<ForeignFieldQueryExtension>
    */
