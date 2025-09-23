@@ -87,10 +87,10 @@ class Url extends Model
     $result = [];
     $glues = $this->isMailTo() ? self::MAILTO_GLUES : self::DEFAULT_GLUES;
     $parts = $this->attributes + [
-      'auth' => $this->getAuthentication(),
-    ];
+        'auth' => $this->getAuthentication(),
+      ];
 
-    foreach ($glues as list($key, $prefix, $suffix)) {
+    foreach ($glues as [$key, $prefix, $suffix]) {
       $value = $parts[$key] ?? '';
       if (!empty($value)) {
         array_push($result, $prefix, $value, $suffix);
@@ -129,20 +129,7 @@ class Url extends Model
       return [];
     }
 
-    $result = [];
-    $isMailTo = $this->isMailTo();
-
-    foreach (explode('&', $this->query) as $param) {
-      $parts = explode('=', $param, 2);
-      if (count($parts) !== 2) {
-        continue;
-      }
-
-      list($key, $value) = $parts;
-      $value = $isMailTo ? rawurldecode($value) : urldecode($value);
-      $result[urldecode($key)] = $value;
-    }
-
+    parse_str($this->query, $result);
     return $result;
   }
 
@@ -178,29 +165,17 @@ class Url extends Model
 
   /**
    * @param array $query
+   * @param bool $collapseLists
    * @return $this
    */
-  public function setQuery(array $query): Url {
-    $parts = [];
-    $isMailTo = $this->isMailTo();
+  public function setQuery(array $query, bool $collapseLists = true): Url {
+    $encoding = $this->isMailTo() ? PHP_QUERY_RFC3986 : PHP_QUERY_RFC1738;
+    $this->query = http_build_query($query, '', null, $encoding);
 
-    foreach ($query as $key => $value) {
-      if (is_null($value)) {
-        continue;
-      }
-
-      if ($value instanceof UrlParameter) {
-        $value = $value->value;
-      } elseif ($isMailTo) {
-        $value = rawurlencode($value);
-      } else {
-        $value = urlencode($value);
-      }
-
-      $parts[] = urlencode($key) . '=' . $value;
+    if ($collapseLists) {
+      $this->query = preg_replace('/%5B[0-9]+%5D/imU', '%5B%5D', $this->query);
     }
 
-    $this->query = empty($parts) ? null : implode('&', $parts);
     return $this;
   }
 
