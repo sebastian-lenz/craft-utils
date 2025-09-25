@@ -6,12 +6,11 @@ use Craft;
 use craft\db\ActiveRecord;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\events\CancelableEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use Exception;
+use Illuminate\Support\Arr;
 use Yii;
-use yii\base\Event;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
 
@@ -39,6 +38,16 @@ class ForeignFieldQueryExtension
    * @phpstan-var array|null
    */
   public ?array $filters;
+
+  /**
+   * @var bool
+   */
+  public bool $joinOnRootId = false;
+
+  /**
+   * @var string
+   */
+  public string $joinType = 'LEFT JOIN';
 
   /**
    * @phpstan-var ElementQuery
@@ -96,6 +105,8 @@ class ForeignFieldQueryExtension
   protected function applyOptions(array $options): static {
     $this->enableEagerLoad = $this->enableEagerLoad || $options['enableEagerLoad'];
     $this->enableJoin = $this->enableJoin || $options['enableJoin'];
+    $this->joinOnRootId = $this->joinOnRootId || $options['joinOnRootId'];
+    $this->joinType = Arr::get($options, 'joinType', $this->joinType);
 
     if (is_array($options['filters'])) {
       $this->filters = is_array($this->filters)
@@ -126,9 +137,17 @@ class ForeignFieldQueryExtension
     $fieldId     = $this->field->id;
     $query       = $this->query->query;
     $subQuery    = $this->query->subQuery;
+    $idField     = $this->joinOnRootId ? 'rootId' : 'elementId';
+
+    if (
+      is_array($query->join) &&
+      Arr::first($query->join, fn(array $join) => $join[1] == "$tableName $handle")
+    ) {
+      return;
+    }
 
     $conditions = [
-      "[[$handle.elementId]] = [[elements.id]]",
+      "[[$handle.$idField]] = [[elements.id]]",
       "[[$handle.fieldId]] = $fieldId"
     ];
 
@@ -138,8 +157,9 @@ class ForeignFieldQueryExtension
 
     $conditionsList = implode(' AND ', $conditions);
 
-    $query->leftJoin($tableName . ' ' . $handle, $conditionsList);
-    $subQuery->leftJoin($tableName . ' ' . $handle, $conditionsList);
+    $query->join($this->joinType, "$tableName $handle", "[[$handle.id]] = subquery.{$handle}Id");
+    $subQuery->join($this->joinType, "$tableName $handle", $conditionsList);
+    $subQuery->addSelect("[[$handle.id]] AS {$handle}Id");
 
     if (is_array($this->filters)) {
       foreach ($this->filters as $name => $filter) {
@@ -189,6 +209,8 @@ class ForeignFieldQueryExtension
     $filters = ArrayHelper::getValue($options, 'filters');
     $forceEagerLoad = !!ArrayHelper::getValue($options, 'forceEagerLoad', false);
     $forceJoin = !!ArrayHelper::getValue($options, 'forceJoin', false);
+    $joinOnRootId = !!ArrayHelper::getValue($options, 'joinOnRootId', false);
+    $joinType = ArrayHelper::getValue($options, 'joinType', 'LEFT JOIN');
 
     $enableEagerLoad = static::enableEagerLoad($query, $field) || $forceEagerLoad;
     $enableJoin = static::enableJoin($query, $field) || $filters || $forceJoin;
@@ -199,6 +221,8 @@ class ForeignFieldQueryExtension
         'enableJoin' => $enableJoin,
         'field' => $field,
         'filters' => $filters,
+        'joinOnRootId' => $joinOnRootId,
+        'joinType' => $joinType,
         'query' => $query,
       ];
 
